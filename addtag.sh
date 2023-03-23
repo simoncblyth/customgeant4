@@ -8,6 +8,9 @@ VERSION=${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}
 
 cat << EOC
 
+## NB before running this bump the version in CMakeLists.txt and 
+## make sure to "git add" and "git push"  to avoid version inconsistency 
+
 git tag -a v$VERSION -m "addtag.sh for VERSION $VERSION extracted from CMakeLists.txt  "
 git push --tags
 
