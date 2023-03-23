@@ -1,0 +1,30 @@
+#[=[
+Custom4ConfigVersion.cmake
+============================
+
+Derived from cmake/Templates/Custom4ConfigVersion.cmake.in
+
+This file is configured by Custom4 for use with CMake's find_package in
+Config mode. It enables external projects to determine the version of 
+Custom4 found. More importantly, it allows that command to automatically 
+determine whether the found install is compatible with any VERSION that 
+was supplied with find_package.
+
+This file is configured by the Custom4 CMake system and SHOULD NOT BE EDITED
+#]=]
+
+# - Installed Version as set from CMake
+set(PACKAGE_VERSION "@Custom4_VERSION@")
+ 
+# Check version compatibility 
+if("${PACKAGE_VERSION}" VERSION_LESS "${PACKAGE_FIND_VERSION}")
+  set(PACKAGE_VERSION_COMPATIBLE FALSE)
+else()
+  set(PACKAGE_VERSION_COMPATIBLE TRUE)
+  if("${PACKAGE_VERSION}" VERSION_EQUAL "${PACKAGE_FIND_VERSION}")
+    set(PACKAGE_VERSION_EXACT TRUE)
+  endif()
+endif()
+
+
+
