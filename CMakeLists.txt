@@ -33,15 +33,15 @@ set(CMAKE_MODULE_PATH
 
 find_package(Geant4 REQUIRED)   
 
-get_filename_component(Custom4_Geant4_PREFIX "${Geant4_INCLUDE_DIR}/../.." ABSOLUTE) ## DUH : Geant4 does not provide PREFIX
-find_program(Custom4_GEANT4_CONFIG_BIN geant4-config PATHS ${C4_Geant4_PREFIX}/bin)
+get_filename_component(Custom4_GEANT4_PREFIX "${Geant4_INCLUDE_DIR}/../.." ABSOLUTE) ## DUH : Geant4 does not provide PREFIX
+find_program(Custom4_GEANT4_CONFIG_BIN geant4-config PATHS ${Custom4_GEANT4_PREFIX}/bin)
 execute_process(
      COMMAND ${Custom4_GEANT4_CONFIG_BIN} --cflags
-     OUTPUT_VARIABLE Custom4_CFLAGS                                   ## the cflags has the correct include directory 
+     OUTPUT_VARIABLE Custom4_GEANT4_CFLAGS                                   ## the cflags has the correct include directory 
      OUTPUT_STRIP_TRAILING_WHITESPACE
     )
 
-string(REPLACE "-std=c++11" "" Custom4_CFLAGS ${Custom4_CFLAGS})
+string(REPLACE "-std=c++11" "" Custom4_GEANT4_CFLAGS ${Custom4_GEANT4_CFLAGS})
 
 execute_process(
     COMMAND ${Custom4_GEANT4_CONFIG_BIN} --libs
@@ -49,7 +49,7 @@ execute_process(
     OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
-add_definitions(${Custom4_CFLAGS})
+add_definitions(${Custom4_GEANT4_CFLAGS})
 
 
 set(Custom4_VERBOSE YES)
@@ -64,11 +64,11 @@ if(Custom4_VERBOSE)
     message(STATUS "Geant4_CXX_FLAGS     : ${Geant4_CXX_FLAGS} (recommended)")
     message(STATUS "Geant4_CXXSTD        : ${Geant4_CXXSTD}  (standard used to compile Geant4) ")
     message(STATUS "Geant4_TLS_MODEL     : ${Geant4_TLS_MODEL}  (only set if install has multithreading support)")
+    message(STATUS "Geant4_INCLUDE_DIR   : ${Geant4_INCLUDE_DIR}  (expected ending: include/Geant4) ")
 
-    message(STATUS "Geant4_INCLUDE_DIR    : ${Geant4_INCLUDE_DIR}  (expected ending: include/Geant4) ")
-    message(STATUS "Custom4_Geant4_PREFIX : ${Custom4_Geant4_PREFIX}      (derived from INCLUDE_DIR) ")
+    message(STATUS "Custom4_GEANT4_PREFIX     : ${Custom4_GEANT4_PREFIX}      (derived from INCLUDE_DIR) ")
     message(STATUS "Custom4_GEANT4_CONFIG_BIN : ${Custom4_GEANT4_CONFIG_BIN} ")
-    message(STATUS "Custom4_CFLAGS            : ${Custom4_CFLAGS}        (from geant4-config --cflags : with -std=c++11 removed) ")
+    message(STATUS "Custom4_GEANT4_CFLAGS     : ${Custom4_GEANT4_CFLAGS}        (from geant4-config --cflags : with -std=c++11 removed) ")
     message(STATUS "Custom4_GEANT4_LIBRARIES  : ${Custom4_GEANT4_LIBRARIES}  (from geant4-config --libs) ")
 
 endif()
