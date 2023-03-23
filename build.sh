@@ -27,19 +27,18 @@ BASE=/tmp/$USER/$name
 bdir=$BASE/build 
 idir=$BASE/install
 
-rm -rf $idir    # idir gets created by "make install"
+if [ -n "$OPTICKS_PREFIX" ]; then 
+    idir=$OPTICKS_PREFIX
+fi 
+
 rm -rf $bdir
 mkdir -p $bdir  # bdir must be created, CMake populates it with Makefile and workings 
-
 cd $bdir 
 pwd 
 
 cmake $sdir -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=$idir
 make
 make install   
-
-
-
 
 
 

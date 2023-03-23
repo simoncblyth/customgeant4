@@ -113,6 +113,13 @@ get_filename_component(Custom4_LIBRARY_DIR  \"\${CMAKE_CURRENT_LIST_FILE}/../..\
 get_filename_component(Custom4_PREFIX       \"\${CMAKE_CURRENT_LIST_FILE}/../../..\" ABSOLUTE)
 get_filename_component(Custom4_INCLUDE_DIR  \"\${Custom4_PREFIX}/${CUSTOM4_RELATIVE_INCDIR}\" ABSOLUTE)
 
+find_library(Custom4_LIBRARY_PATH
+           NAMES Custom4
+           PATHS \${Custom4_LIBRARY_DIR}
+           NO_DEFAULT_PATH  
+        )   
+
+
 set(Custom4_FOUND \"YES\")
 set(Custom4_INCLUDE_DIRS \${Custom4_INCLUDE_DIR})
 set(Custom4_CFLAGS    \"-I\${Custom4_INCLUDE_DIR}\")
@@ -129,10 +136,19 @@ if(Custom4_VERBOSE)
     message(STATUS \"Custom4_CFLAGS        : \${Custom4_CFLAGS} \")
     message(STATUS \"Custom4_DEFINITIONS   : \${Custom4_DEFINITIONS} \")
     message(STATUS \"Custom4_LIBRARY_DIR   : \${Custom4_LIBRARY_DIR} \")
+    message(STATUS \"Custom4_LIBRARY_PATH  : \${Custom4_LIBRARY_PATH} \")
     message(STATUS \"Custom4_LIBRARIES     : \${Custom4_LIBRARIES} \")
     message(STATUS \"Custom4_CMAKE_PATH    : \${Custom4_CMAKE_PATH} \")
     message(STATUS \"Custom4_CMAKE_DIR     : \${Custom4_CMAKE_DIR} \")
 endif()
+
+add_library(Custom4::Custom4 SHARED IMPORTED)
+set_target_properties(Custom4::Custom4 PROPERTIES
+  IMPORTED_LOCATION             \"\${Custom4_LIBRARY_PATH}\"  
+  INTERFACE_COMPILE_DEFINITIONS \"\${Custom4_DEFINITIONS}\"
+  INTERFACE_INCLUDE_DIRECTORIES \"\${Custom4_INCLUDE_DIR}\"
+)
+
 
 ")
 
