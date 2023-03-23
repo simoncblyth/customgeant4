@@ -12,6 +12,8 @@ message(STATUS "Custom4_INCLUDE_DIRS  : ${Custom4_INCLUDE_DIRS} ")
 message(STATUS "Custom4_DEFINITIONS   : ${Custom4_DEFINITIONS} ")
 message(STATUS "Custom4_LIBRARY_DIR   : ${Custom4_LIBRARY_DIR} ")
 message(STATUS "Custom4_LIBRARIES     : ${Custom4_LIBRARIES} ")
+message(STATUS "Custom4_CMAKE_PATH    : ${Custom4_CMAKE_PATH} ")
+message(STATUS "Custom4_CMAKE_DIR     : ${Custom4_CMAKE_DIR} ")
 
 
 

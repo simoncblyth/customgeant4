@@ -23,7 +23,7 @@ set(${PROJECT_NAME}_VERSION "${${PROJECT_NAME}_VERSION_MAJOR}.${${PROJECT_NAME}_
 
 
 include(GNUInstallDirs)
-set(CMAKE_INSTALL_INCLUDEDIR "include/${name}")  # override the GNUInstallDirs default of "include"
+#set(CMAKE_INSTALL_INCLUDEDIR "include/${name}")  # override the GNUInstallDirs default of "include"
 
 
 set(CMAKE_MODULE_PATH
@@ -94,11 +94,47 @@ target_include_directories( ${name} PUBLIC
       $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> 
 )
 target_link_libraries(      ${name} PUBLIC ${Geant4_LIBRARIES})
-install(TARGETS ${name}  LIBRARY DESTINATION lib)
-install(FILES ${HEADERS}  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
-#add_subdirectory(tests)
+set(CUSTOM4_RELATIVE_LIBDIR  ${CMAKE_INSTALL_LIBDIR})
+set(CUSTOM4_RELATIVE_INCDIR  ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME})
 
-include(C4ConfigureCMakeHelpers)
+install(TARGETS ${name}  LIBRARY DESTINATION ${CUSTOM4_RELATIVE_LIBDIR})
+install(FILES ${HEADERS}  DESTINATION        ${CUSTOM4_RELATIVE_INCDIR})
 
+set(CUSTOM4_CMAKE_DIR  ${CUSTOM4_RELATIVE_LIBDIR}/${PROJECT_NAME}-${${PROJECT_NAME}_VERSION})
+
+
+set(CUSTOM4_SETUP "
+# CUSTOM4_SETUP 
+
+get_filename_component(Custom4_CMAKE_PATH   \"\${CMAKE_CURRENT_LIST_FILE}\"    ABSOLUTE)
+get_filename_component(Custom4_CMAKE_DIR    \"\${CMAKE_CURRENT_LIST_FILE}/..\" ABSOLUTE)
+get_filename_component(Custom4_LIBRARY_DIR  \"\${CMAKE_CURRENT_LIST_FILE}/../..\" ABSOLUTE)
+get_filename_component(Custom4_PREFIX       \"\${CMAKE_CURRENT_LIST_FILE}/../../..\" ABSOLUTE)
+get_filename_component(Custom4_INCLUDE_DIR  \"\${Custom4_PREFIX}/${CUSTOM4_RELATIVE_INCDIR}\" ABSOLUTE)
+
+set(Custom4_INCLUDE_DIRS \${Custom4_INCLUDE_DIR})
+set(Custom4_LIBRARIES \"-L\${Custom4_LIBRARY_DIR} -l${PROJECT_NAME}\" )
+set(Custom4_DEFINITIONS -DWITH_CUSTOM4 )
+
+")
+
+
+configure_file(
+  ${PROJECT_SOURCE_DIR}/cmake/Templates/Custom4Config.cmake.in
+  ${PROJECT_BINARY_DIR}/Custom4Config.cmake
+  @ONLY
+  )
+
+configure_file(
+  ${PROJECT_SOURCE_DIR}/cmake/Templates/Custom4ConfigVersion.cmake.in
+  ${PROJECT_BINARY_DIR}/Custom4ConfigVersion.cmake
+  @ONLY
+  )
+
+install(FILES
+  ${PROJECT_BINARY_DIR}/Custom4Config.cmake
+  ${PROJECT_BINARY_DIR}/Custom4ConfigVersion.cmake
+  DESTINATION ${CUSTOM4_CMAKE_DIR}
+  )
 

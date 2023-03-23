@@ -2,7 +2,6 @@
 Custom4Config.cmake.in
 #]=]
 
-get_filename_component(Custom4_PREFIX "${CMAKE_CURRENT_LIST_FILE}/../../.." ABSOLUTE)
 
 @CUSTOM4_SETUP@
 
