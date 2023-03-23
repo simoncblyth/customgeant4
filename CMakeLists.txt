@@ -18,7 +18,7 @@ set(name Custom4)
 project(${name})
 set(${PROJECT_NAME}_VERSION_MAJOR 0) 
 set(${PROJECT_NAME}_VERSION_MINOR 0)  
-set(${PROJECT_NAME}_VERSION_PATCH 5)  
+set(${PROJECT_NAME}_VERSION_PATCH 6)  
 set(${PROJECT_NAME}_VERSION "${${PROJECT_NAME}_VERSION_MAJOR}.${${PROJECT_NAME}_VERSION_MINOR}.${${PROJECT_NAME}_VERSION_PATCH}")
 
 
@@ -113,7 +113,9 @@ get_filename_component(Custom4_LIBRARY_DIR  \"\${CMAKE_CURRENT_LIST_FILE}/../..\
 get_filename_component(Custom4_PREFIX       \"\${CMAKE_CURRENT_LIST_FILE}/../../..\" ABSOLUTE)
 get_filename_component(Custom4_INCLUDE_DIR  \"\${Custom4_PREFIX}/${CUSTOM4_RELATIVE_INCDIR}\" ABSOLUTE)
 
+set(Custom4_FOUND \"YES\")
 set(Custom4_INCLUDE_DIRS \${Custom4_INCLUDE_DIR})
+set(Custom4_CFLAGS    \"-I\${Custom4_INCLUDE_DIR}\")
 set(Custom4_LIBRARIES \"-L\${Custom4_LIBRARY_DIR} -l${PROJECT_NAME}\" )
 set(Custom4_DEFINITIONS -DWITH_CUSTOM4 )
 
@@ -124,6 +126,7 @@ if(Custom4_VERBOSE)
     message(STATUS \"Custom4_PREFIX        : \${Custom4_PREFIX} \")
     message(STATUS \"Custom4_INCLUDE_DIR   : \${Custom4_INCLUDE_DIR} \")
     message(STATUS \"Custom4_INCLUDE_DIRS  : \${Custom4_INCLUDE_DIRS} \")
+    message(STATUS \"Custom4_CFLAGS        : \${Custom4_CFLAGS} \")
     message(STATUS \"Custom4_DEFINITIONS   : \${Custom4_DEFINITIONS} \")
     message(STATUS \"Custom4_LIBRARY_DIR   : \${Custom4_LIBRARY_DIR} \")
     message(STATUS \"Custom4_LIBRARIES     : \${Custom4_LIBRARIES} \")
