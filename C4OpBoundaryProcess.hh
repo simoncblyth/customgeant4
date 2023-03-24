@@ -103,24 +103,13 @@ struct C4CustomART ;
 // AS G4OpBoundaryProcessStatus ENUM VARS IN GLOBAL SCOPE JUST USE STANDARD ONES
 
 
-#ifdef PMTSIM_STANDALONE
-#include "plog/Severity.h"
-#include "PMTSIM_API_EXPORT.hh"
-#include "spho.h"
+#include "C4Pho.h"
 
-class PMTSIM_API C4OpBoundaryProcess : public G4VDiscreteProcess
+class C4OpBoundaryProcess : public G4VDiscreteProcess
 {
 public:
-     static const plog::Severity LEVEL ;
-     static const int            PIDX ; 
-     static const bool           PIDX_ENABLED ; 
-private:
-#else
-class            C4OpBoundaryProcess : public G4VDiscreteProcess
-{
-#endif
-
-public:
+        static const int  PIDX ; 
+        static const bool PIDX_ENABLED ; 
 
         ////////////////////////////////
         // Constructors and Destructor
@@ -261,12 +250,10 @@ public:
         G4ThreeVector theRecoveredNormal ;   // use haveEnteredDaughter status to unflip back to G4Track independent normal
         G4double      theAbsorption ; 
 
-        char          m_custom_status ; 
-        C4CustomART*    m_custom_art ;  
-
-#ifdef PMTSIM_STANDALONE
-        spho*         m_label ; 
-#endif
+        char           m_custom_status ; 
+        C4CustomART*   m_custom_art ;  
+        C4Pho*         m_track_label ; 
+        bool           m_track_dump ; 
 
 };
 

@@ -1,6 +1,6 @@
 #pragma once
 /**
-S4Touchable.h
+C4Touchable.h
 ================
 
 The touchable history is from inside to outside, so "deeper" corresponds to wider volumes.
@@ -21,8 +21,10 @@ This was developed within opticks, see::
 #include "G4TouchableHistory.hh"
 #include "G4VSolid.hh"
 
-struct S4Touchable
+struct C4Touchable
 {
+    static int VolumeIdentifier(const G4Track* track, bool copyNo_fallback ); 
+    static int VolumeCopyNo(const G4Track* track); 
     static int ReplicaNumber(const G4VTouchable* touch) ; 
     static int ReplicaDepth(const G4VTouchable* touch) ; 
     static int TouchDepth(const G4VTouchable* touch ); 
@@ -32,14 +34,28 @@ struct S4Touchable
     static std::string Desc(const G4VTouchable* touch, int so_wid=20, int pv_wid=20);
 };
 
-inline int S4Touchable::ReplicaNumber(const G4VTouchable* touch)  // static 
+inline int C4Touchable::VolumeIdentifier(const G4Track* track, bool copyNo_fallback )  // static 
+{
+    const G4VTouchable* touch = track->GetTouchable();    
+    int id = ReplicaNumber(touch);
+    if(id < 0 && copyNo_fallback) id = VolumeCopyNo(track) ; 
+    return id ; 
+}
+
+inline int C4Touchable::VolumeCopyNo(const G4Track* track)
+{
+    const G4VPhysicalVolume* pv = track->GetVolume() ;
+    return pv ? pv->GetCopyNo() : -1 ; 
+}
+
+inline int C4Touchable::ReplicaNumber(const G4VTouchable* touch)  // static 
 {
     int d = ReplicaDepth(touch);
     return d > -1 ? touch->GetReplicaNumber(d) : -1  ;
 }
 
 /**
-S4Touchable::ReplicaDepth
+C4Touchable::ReplicaDepth
 ---------------------------
 
 Starting from touch depth look outwards at (volume, mother_volume) 
@@ -50,7 +66,7 @@ When no such depth is found return -1.
 
 **/
 
-inline int S4Touchable::ReplicaDepth(const G4VTouchable* touch)   // static
+inline int C4Touchable::ReplicaDepth(const G4VTouchable* touch)   // static
 {
     int nd = touch->GetHistoryDepth();
     int t = TouchDepth(touch); 
@@ -74,14 +90,14 @@ inline int S4Touchable::ReplicaDepth(const G4VTouchable* touch)   // static
 }
 
 /**
-S4Touchable::TouchDepth
+C4Touchable::TouchDepth
 -------------------------
 
 Depth of touch volume, -1 if not found. 
 
 **/
 
-inline int S4Touchable::TouchDepth(const G4VTouchable* touch ) // static
+inline int C4Touchable::TouchDepth(const G4VTouchable* touch ) // static
 {
     const G4VPhysicalVolume* tpv = touch->GetVolume() ;
     int t = -1 ; 
@@ -97,7 +113,7 @@ inline int S4Touchable::TouchDepth(const G4VTouchable* touch ) // static
     return t ; 
 }
 
-inline bool S4Touchable::HasMoreThanOneDaughterWithName( const G4LogicalVolume* lv, const char* name)  // static
+inline bool C4Touchable::HasMoreThanOneDaughterWithName( const G4LogicalVolume* lv, const char* name)  // static
 {
     int num_dau = lv->GetNoDaughters();
     if(num_dau <= 1) return false ; 
@@ -113,10 +129,10 @@ inline bool S4Touchable::HasMoreThanOneDaughterWithName( const G4LogicalVolume* 
     return false ; 
 }
 
-inline std::string S4Touchable::Brief(const G4VTouchable* touch )
+inline std::string C4Touchable::Brief(const G4VTouchable* touch )
 {
     std::stringstream ss ; 
-    ss << "S4Touchable::Brief"
+    ss << "C4Touchable::Brief"
        << " HistoryDepth " << std::setw(2) <<  touch->GetHistoryDepth()
        << " TouchDepth " << std::setw(2) << TouchDepth(touch)
        << " ReplicaDepth " << std::setw(2) << ReplicaDepth(touch)
@@ -124,7 +140,7 @@ inline std::string S4Touchable::Brief(const G4VTouchable* touch )
        ; 
     return ss.str(); 
 }
-inline std::string S4Touchable::Desc(const G4VTouchable* touch, int so_wid, int pv_wid )
+inline std::string C4Touchable::Desc(const G4VTouchable* touch, int so_wid, int pv_wid )
 {
     int history_depth = touch->GetHistoryDepth();
     int touch_depth = TouchDepth(touch); 
@@ -132,7 +148,7 @@ inline std::string S4Touchable::Desc(const G4VTouchable* touch, int so_wid, int 
     int replica_number = ReplicaNumber(touch); 
 
     std::stringstream ss ; 
-    ss << "S4Touchable::Desc"
+    ss << "C4Touchable::Desc"
        << " HistoryDepth " << std::setw(2) << history_depth 
        << " TouchDepth " << std::setw(2) << touch_depth 
        << " ReplicaDepth " << std::setw(2) << replica_depth

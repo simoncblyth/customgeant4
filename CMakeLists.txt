@@ -9,7 +9,6 @@ Opticks CMake machinery
 Following primitive non-target based CMake approach for consistency with junosw
 Potential for troubles when used with Opticks target based CMake.  
 
-Need to derive a C4Config.cmake
 
 #]=]
 
@@ -85,6 +84,9 @@ set(HEADERS
     C4CustomART_Debug.h
     C4MultiLayrStack.h
     C4Touchable.h
+    C4TrackInfo.h
+    C4Pho.h
+    C4Sys.h 
 )
 
 add_library( ${name} SHARED ${SOURCES} ${HEADERS} )
@@ -145,7 +147,7 @@ endif()
 add_library(Custom4::Custom4 SHARED IMPORTED)
 set_target_properties(Custom4::Custom4 PROPERTIES
   IMPORTED_LOCATION             \"\${Custom4_LIBRARY_PATH}\"  
-  INTERFACE_COMPILE_DEFINITIONS \"\${Custom4_DEFINITIONS}\"
+  INTERFACE_COMPILE_DEFINITIONS \"WITH_CUSTOM4\"
   INTERFACE_INCLUDE_DIRECTORIES \"\${Custom4_INCLUDE_DIR}\"
 )
 

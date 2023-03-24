@@ -1,6 +1,6 @@
 #pragma once
 /**
-CustomART : Modifies CustomG4OpBoundaryProcess with Custom calc of A/R/T coeffs
+C4CustomART : Used by C4OpBoundaryProcess for Custom calc of A/R/T coeffs
 ==================================================================================
 
 * CustomART is instanciated by the CustomG4OpBoundaryProcess ctor
@@ -76,9 +76,6 @@ Do you agree with this argument ?
 #include "C4Touchable.h"
 #include "C4CustomART_Debug.h"
 
-#ifdef PMTSIM_STANDALONE
-#include "SLOG.hh"
-#endif
 
 struct C4CustomART
 {
@@ -99,9 +96,7 @@ struct C4CustomART
     const G4ThreeVector& theRecoveredNormal ; 
     const G4double& thePhotonMomentum ; 
 
-#ifdef PMTSIM_STANDALONE
     C4CustomART_Debug dbg ;  
-#endif
 
     C4CustomART(
         const C4IPMTAccessor* accessor, 
@@ -248,34 +243,12 @@ So the 3-way probabilities are scaled into 2-way ones, eg::
 inline void C4CustomART::doIt(const G4Track& aTrack, const G4Step& )
 {
     G4double minus_cos_theta = OldMomentum*theRecoveredNormal ; 
-
     G4double energy = thePhotonMomentum ; 
     G4double wavelength = CLHEP::twopi*CLHEP::hbarc/energy ;
     G4double energy_eV = energy/CLHEP::eV ;
     G4double wavelength_nm = wavelength/CLHEP::nm ; 
 
-    const G4VTouchable* touch = aTrack.GetTouchable();    
-    int pmtid = S4Touchable::ReplicaNumber(touch);
-
-#ifdef PMTSIM_STANDALONE
-    if( pmtid == -1 )
-    {
-        const G4VPhysicalVolume* pv = aTrack.GetVolume() ;
-        G4int pv_copyNo = pv->GetCopyNo(); 
-        LOG_IF(CustomG4OpBoundaryProcess::LEVEL, pmtid == -1) 
-            << " REPLACING INVALID pmtid FROM S4Touchable::ReplicaNumber  "
-            << " WITH pv_copyNo "
-            << " pmtid " << pmtid 
-            << " pv_copyNo " << pv_copyNo
-            << std::endl 
-            << S4Touchable::Desc(touch)
-            << std::endl 
-            ;
-        pmtid = pv_copyNo ; 
-    }
-    assert( pmtid > -1 ); 
-#endif
-
+    int pmtid = C4Touchable::VolumeIdentifier(&aTrack, true ); 
     int pmtcat = accessor->get_pmtcat( pmtid ) ; 
     double _qe = minus_cos_theta > 0. ? 0.0 : accessor->get_pmtid_qe( pmtid, energy ) ;  
     // following the old junoPMTOpticalModel with "backwards" _qe always zero 
@@ -284,20 +257,6 @@ inline void C4CustomART::doIt(const G4Track& aTrack, const G4Step& )
     accessor->get_stackspec(a_spec, pmtcat, energy_eV ); 
     StackSpec<double,4> spec ; 
     spec.import( a_spec ); 
-
-#ifdef PMTSIM_STANDALONE
-    LOG(CustomG4OpBoundaryProcess::LEVEL) 
-        << " pmtid " << pmtid
-        << " pmtcat " << pmtcat
-        << " minus_cos_theta " << minus_cos_theta  
-        << " _qe " << _qe
-        << " wavelength_nm " << wavelength_nm
-        << " energy_eV " << energy_eV
-        << " spec " 
-        << std::endl 
-        << spec 
-        ; 
-#endif
 
     Stack<double,4> stack(wavelength_nm, minus_cos_theta, spec );  
 
@@ -312,19 +271,6 @@ inline void C4CustomART::doIt(const G4Track& aTrack, const G4Step& )
     double S = E_s2 ; 
     double P = one - S ; 
 
-#ifdef PMTSIM_STANDALONE
-    const double _si2 = sqrtf( 1. - minus_cos_theta*minus_cos_theta ); 
-    LOG(CustomG4OpBoundaryProcess::LEVEL) 
-        << " count " << count 
-        << " pmtid " << pmtid
-        << " _si " << std::fixed << std::setw(10) << std::setprecision(5) << _si 
-        << " _si2 " << std::fixed << std::setw(10) << std::setprecision(5) << _si2 
-        << " theRecoveredNormal " << theRecoveredNormal 
-        << " OldPolarization*OldMomentum.cross(theRecoveredNormal) " << OldPolarization*OldMomentum.cross(theRecoveredNormal) 
-        << " E_s2 " << std::fixed << std::setw(10) << std::setprecision(5) << E_s2 
-        ;    
-#endif
-
     double T = S*stack.art.T_s + P*stack.art.T_p ;  // matched with TransCoeff see sysrap/tests/stmm_vs_sboundary_test.cc
     double R = S*stack.art.R_s + P*stack.art.R_p ;
     double A = S*stack.art.A_s + P*stack.art.A_p ;  
@@ -333,21 +279,6 @@ inline void C4CustomART::doIt(const G4Track& aTrack, const G4Step& )
     theAbsorption = A ; 
     theReflectivity  = R/(1.-A) ; 
     theTransmittance = T/(1.-A)  ;   
-
-#ifdef PMTSIM_STANDALONE
-    LOG(CustomG4OpBoundaryProcess::LEVEL) 
-        << " count " << count 
-        << " S " << std::fixed << std::setw(10) << std::setprecision(5) << S 
-        << " P " << std::fixed << std::setw(10) << std::setprecision(5) << P
-        << " T " << std::fixed << std::setw(10) << std::setprecision(5) << T 
-        << " R " << std::fixed << std::setw(10) << std::setprecision(5) << R
-        << " A " << std::fixed << std::setw(10) << std::setprecision(5) << A
-        << " A+R+T " << std::fixed << std::setw(10) << std::setprecision(5) << (A+R+T)
-        << " theReflectivity " << std::fixed << std::setw(10) << std::setprecision(5) << theReflectivity
-        << " theTransmittance " << std::fixed << std::setw(10) << std::setprecision(5) << theTransmittance
-        << " theReflectivity + theTransmittance " << std::fixed << std::setw(10) << std::setprecision(5) << ( theReflectivity + theTransmittance )
-        ;    
-#endif
 
     // stackNormal is not flipped (as minus_cos_theta is fixed at -1.) presumably this is due to _qe definition
     Stack<double,4> stackNormal(wavelength_nm, -1. , spec ); 
@@ -370,7 +301,7 @@ inline void C4CustomART::doIt(const G4Track& aTrack, const G4Step& )
     assert( expect ); 
 
 
-#ifdef PMTSIM_STANDALONE
+    // TODO: disable the debug collection once validates
     dbg.A = A ; 
     dbg.R = R ; 
     dbg.T = T ; 
@@ -384,17 +315,6 @@ inline void C4CustomART::doIt(const G4Track& aTrack, const G4Step& )
     dbg.minus_cos_theta = minus_cos_theta ; 
     dbg.wavelength_nm   = wavelength_nm ; 
     dbg.pmtid           = double(pmtid) ; 
-
-    LOG(CustomG4OpBoundaryProcess::LEVEL) 
-        << desc() 
-        << std::endl 
-        << " stackNormal.art.A " <<  stackNormal.art.A
-        << " An " << An
-        << " _qe " << _qe
-        << " theEfficiency " << theEfficiency
-        << " count " << count 
-        ; 
-#endif
 
     count += 1 ; 
 }
@@ -414,5 +334,4 @@ inline std::string C4CustomART::desc() const
     std::string str = ss.str(); 
     return str ; 
 }
-
 

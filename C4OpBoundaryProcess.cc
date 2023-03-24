@@ -82,9 +82,6 @@
 
 #include "C4OpBoundaryProcess.hh"
 #include "C4CustomART.h"
-#ifdef PMTSIM_STANDALONE
-#include "C4CustomART_Debug.h"
-#endif
 
 #include "G4GeometryTolerance.hh"
 
@@ -94,19 +91,13 @@
 #include "G4SystemOfUnits.hh"
 
 
-
-#ifdef PMTSIM_STANDALONE
-#include "SLOG.hh"
-#include "ssys.h"
-#include "spho.h"
-#include "STrackInfo.h"
-
-const plog::Severity C4OpBoundaryProcess::LEVEL = SLOG::EnvLevel("C4OpBoundaryProcess", "DEBUG" );
-const int            C4OpBoundaryProcess::PIDX  = ssys::getenvint("PIDX", -1 ); 
-const bool           C4OpBoundaryProcess::PIDX_ENABLED  = ssys::getenvbool("C4OpBoundaryProcess__PIDX_ENABLED"); 
-#endif
+#include "C4Sys.h"
+#include "C4Pho.h"
+#include "C4TrackInfo.h"
 
 
+const int   C4OpBoundaryProcess::PIDX  = C4Sys::getenvint("PIDX", -1 ); 
+const bool  C4OpBoundaryProcess::PIDX_ENABLED  = C4Sys::getenvbool("C4OpBoundaryProcess__PIDX_ENABLED"); 
 
 
 /////////////////////////
@@ -208,15 +199,9 @@ C4OpBoundaryProcess::~C4OpBoundaryProcess(){}
 G4VParticleChange*
 C4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 {
-#ifdef PMTSIM_STANDALONE
-        m_label = STrackInfo<spho>::GetRef(&aTrack);
-        assert( m_label ); 
-        LOG_IF(info, m_label->ix == PIDX && PIDX_ENABLED ) 
-           << " PIDX " << PIDX 
-           << " m_label " << m_label->desc() 
-           ; 
-#endif
-
+        m_track_label = C4TrackInfo<C4Pho>::GetRef(&aTrack);
+        assert( m_track_label ); 
+        m_track_dump = m_track_label->ix == PIDX && PIDX_ENABLED ; 
 
         theStatus = Undefined;
         m_custom_status = 'U' ;
@@ -307,18 +292,6 @@ C4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 
         G4bool haveEnteredDaughter= (thePostPV->GetMotherLogical() == thePrePV ->GetLogicalVolume()); 
         theRecoveredNormal = ( haveEnteredDaughter ? -1. : 1. )* theGlobalNormal  ; 
-
-
-#ifdef PMTSIM_STANDALONE
-        LOG_IF(info, m_label->ix == PIDX && PIDX_ENABLED ) 
-           << " PIDX " << PIDX 
-           << " haveEnteredDaughter " << haveEnteredDaughter
-           << " theGlobalNormal " << theGlobalNormal
-           << " theRecoveredNormal " << theRecoveredNormal  
-           ; 
-#endif
-
-
 
         // ] SCB Custom extras
 
@@ -576,12 +549,13 @@ C4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
             {
                 m_custom_status = 'X' ;
             }
-#ifdef PMTSIM_STANDALONE
-            LOG_IF(info, m_label->ix == PIDX && PIDX_ENABLED  ) 
+
+            if(m_track_dump) std::cout 
+                << "C4OpBoundaryProcess::PostStepDoIt"
                 << " PIDX " << PIDX 
                 << " m_custom_status " << m_custom_status 
+                << std::endl 
                 ; 
-#endif
 
 
            }
@@ -671,9 +645,7 @@ C4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
                    DoAbsorption();
                 } else {
 
-#ifdef PMTSIM_STANDALONE
-                   LOG_IF(info, m_label->ix == PIDX && PIDX_ENABLED ) << " FALL THRU TRANSMISSION " ; 
-#endif
+                   if(m_track_dump) std::cerr << " FALL THRU TRANSMISSION " << std::endl ; 
 
                    theStatus = Transmission;
                    NewMomentum = OldMomentum;
