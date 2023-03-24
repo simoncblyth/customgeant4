@@ -17,8 +17,9 @@ set(name Custom4)
 project(${name})
 set(${PROJECT_NAME}_VERSION_MAJOR 0) 
 set(${PROJECT_NAME}_VERSION_MINOR 0)  
-set(${PROJECT_NAME}_VERSION_PATCH 6)  
+set(${PROJECT_NAME}_VERSION_PATCH 7)  
 set(${PROJECT_NAME}_VERSION "${${PROJECT_NAME}_VERSION_MAJOR}.${${PROJECT_NAME}_VERSION_MINOR}.${${PROJECT_NAME}_VERSION_PATCH}")
+
 
 
 include(GNUInstallDirs)
@@ -144,13 +145,15 @@ if(Custom4_VERBOSE)
     message(STATUS \"Custom4_CMAKE_DIR     : \${Custom4_CMAKE_DIR} \")
 endif()
 
-add_library(Custom4::Custom4 SHARED IMPORTED)
-set_target_properties(Custom4::Custom4 PROPERTIES
-  IMPORTED_LOCATION             \"\${Custom4_LIBRARY_PATH}\"  
-  INTERFACE_COMPILE_DEFINITIONS \"WITH_CUSTOM4\"
-  INTERFACE_INCLUDE_DIRECTORIES \"\${Custom4_INCLUDE_DIR}\"
-)
-
+set(_tgt Custom4::Custom4)
+if(NOT TARGET \${_tgt})
+    add_library(\${_tgt} SHARED IMPORTED)
+    set_target_properties(\${_tgt} PROPERTIES
+      IMPORTED_LOCATION             \"\${Custom4_LIBRARY_PATH}\"  
+      INTERFACE_COMPILE_DEFINITIONS \"WITH_CUSTOM4\"
+      INTERFACE_INCLUDE_DIRECTORIES \"\${Custom4_INCLUDE_DIR}\"
+      )
+endif()
 
 ")
 
@@ -167,9 +170,19 @@ configure_file(
   @ONLY
   )
 
+
+configure_file( 
+  ${PROJECT_SOURCE_DIR}/C4Version.h.in  
+  ${PROJECT_BINARY_DIR}/C4Version.h 
+  @ONLY
+  )
+
+
+
 install(FILES
   ${PROJECT_BINARY_DIR}/Custom4Config.cmake
   ${PROJECT_BINARY_DIR}/Custom4ConfigVersion.cmake
+  ${PROJECT_BINARY_DIR}/C4Version.h
   DESTINATION ${CUSTOM4_CMAKE_DIR}
   )
 

@@ -1,0 +1,8 @@
+#pragma once
+
+#define Custom4_VERSION_MAJOR @Custom4_VERSION_MAJOR@
+#define Custom4_VERSION_MINOR @Custom4_VERSION_MINOR@
+#define Custom4_VERSION_PATCH @Custom4_VERSION_PATCH@
+#define Custom4_VERSION @Custom4_VERSION@
+
+
