@@ -20,11 +20,14 @@ resulting in potentially multiple reemission generations.
 **/
 
 #include <string>
+#include <array>
 
 struct C4Pho_uchar4 { unsigned char x,y,z,w ; }; 
 
 struct C4Pho
 {
+    static constexpr const int N = 4 ;
+
     int gs ; // 0-based genstep index within the event
     int ix ; // 0-based photon index within the genstep
     int id ; // 0-based photon identity index within the event 
@@ -48,6 +51,12 @@ struct C4Pho
 
     C4Pho make_nextgen() const ; // formerly make_reemit 
     std::string desc() const ;
+
+    const int* cdata() const ;
+    int* data();
+    void serialize( std::array<int, 4>& a ) const ; 
+    void load( const std::array<int, 4>& a );  
+
 };
 
 
@@ -124,4 +133,38 @@ inline std::string C4Pho::desc() const
     std::string s = ss.str();
     return s ;
 }
+
+
+
+
+inline int* C4Pho::data()
+{
+    return &gs ;
+}
+inline const int* C4Pho::cdata() const
+{
+    return &gs ;
+}
+inline void C4Pho::serialize( std::array<int, 4>& a ) const
+{
+    assert( a.size() == N );
+    const int* ptr = cdata() ;
+    for(int i=0 ; i < N ; i++ ) a[i] = ptr[i] ;
+}
+inline void C4Pho::load( const std::array<int, 4>& a )
+{
+    assert( a.size() == N );
+    int* ptr = data() ;
+    for(int i=0 ; i < N ; i++ ) ptr[i] = a[i] ;
+}
+
+
+
+
+inline std::ostream& operator<<(std::ostream& os, const C4Pho& p)
+{
+    os << p.desc() ;   
+    return os; 
+}
+
 
