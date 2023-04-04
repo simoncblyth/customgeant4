@@ -6,13 +6,6 @@ between opticks and junosw by splitting off classes/struct that
 depend only on Geant4 so as to allow high level communication 
 between opticks and junosw in the "language" provided by Custom4. 
 
-References to Opticks and other related packages 
---------------------------------------------------
-
-* https://simoncblyth.bitbucket.io/
-* https://simoncblyth.github.io/
-
-
 Classes/Structs
 ------------------
 
@@ -63,12 +56,19 @@ The custom status char is set by C4OpBoundaryProcess::PostStepDoIt
 +------+-------------------------------------------------------------------------------+
 |  Y   |  @ OpticalSurface AND local_z > 0 : so C4CustomART::doIt runs                 |
 +------+-------------------------------------------------------------------------------+
-|  -   |  # OpticalSurface AND local_z > 0 : so traditional detect at photocathode     |                
+|  \-  |  # OpticalSurface AND local_z > 0 : so traditional detect at photocathode     |                
 +------+-------------------------------------------------------------------------------+
 |  X   |  NOT @/# OpticalSurface : so ordinary surface                                 | 
 +------+-------------------------------------------------------------------------------+
 |  \0  |  Uninitialized array content                                                  |
 +------+-------------------------------------------------------------------------------+
+
+
+References to Opticks and other related packages 
+--------------------------------------------------
+
+* https://simoncblyth.bitbucket.io/
+* https://simoncblyth.github.io/
 
 
 
