@@ -6,17 +6,17 @@ struct C4CustomART_Debug
 {
     static constexpr const int N = 12 ; 
 
-    double A ; 
+    double A ;                // 0
     double R ; 
     double T ; 
     double _qe ; 
 
-    double An ; 
+    double An ;               // 1
     double Rn ; 
     double Tn ; 
     double escape_fac ; 
 
-    double minus_cos_theta ; 
+    double minus_cos_theta ;  // 2  
     double wavelength_nm ; 
     double pmtid ; 
     double spare ; 

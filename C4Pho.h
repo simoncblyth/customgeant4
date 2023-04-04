@@ -24,6 +24,11 @@ resulting in potentially multiple reemission generations.
 
 struct C4Pho_uchar4 { unsigned char x,y,z,w ; }; 
 
+union C4Pho_uuc4 { 
+    unsigned     u   ;   
+    C4Pho_uchar4 uc4 ; 
+};  
+
 struct C4Pho
 {
     static constexpr const int N = 4 ;
@@ -31,13 +36,24 @@ struct C4Pho
     int gs ; // 0-based genstep index within the event
     int ix ; // 0-based photon index within the genstep
     int id ; // 0-based photon identity index within the event 
-    C4Pho_uchar4 uc4 ;  // uc4.x : 0-based reemission index incremented at each reemission 
+
+    C4Pho_uchar4 uc4 ;  
+    // uc4.x : gen : 0-based reemission index incremented at each reemission 
+    // uc4.y : eph : eg junoSD_PMT_v2::ProcessHits eph enumeration 
+    // uc4.z : ext : unused
+    // uc4.w : flg : photon point flag TO/BT/BR/SC/AB/SD/SR/... etc 
+
+    unsigned uc4packed() const ; 
 
     int gen() const ; 
+    int eph() const ; 
+    int ext() const ; 
     int flg() const ; 
-    void set_gen(int gn) ; 
-    void set_flg(int fg) ; 
 
+    void set_gen(int gn) ; 
+    void set_eph(int ep) ; 
+    void set_ext(int ex) ; 
+    void set_flg(int fg) ; 
  
     static C4Pho MakePho(int gs_, int ix_, int id_ );   
     static C4Pho Fabricate(int track_id); 
@@ -56,7 +72,6 @@ struct C4Pho
     int* data();
     void serialize( std::array<int, 4>& a ) const ; 
     void load( const std::array<int, 4>& a );  
-
 };
 
 
@@ -64,10 +79,21 @@ struct C4Pho
 #include <sstream>
 #include <iomanip>
 
+inline unsigned C4Pho::uc4packed() const
+{
+    C4Pho_uuc4 uuc4 ; 
+    uuc4.uc4 = uc4 ; 
+    return uuc4.u ;    
+}
 
-inline int C4Pho::gen()   const { return int(uc4.x); }
-inline int C4Pho::flg() const {   return int(uc4.w); }
+inline int C4Pho::gen() const { return int(uc4.x); }
+inline int C4Pho::eph() const { return int(uc4.y); }
+inline int C4Pho::ext() const { return int(uc4.z); }
+inline int C4Pho::flg() const { return int(uc4.w); }
+
 inline void C4Pho::set_gen(int gn) { uc4.x = (unsigned char)(gn) ; }
+inline void C4Pho::set_eph(int ep) { uc4.y = (unsigned char)(ep) ; }
+inline void C4Pho::set_ext(int ex) { uc4.z = (unsigned char)(ex) ; }
 inline void C4Pho::set_flg(int fg) { uc4.w = (unsigned char)(fg) ; }
 
 
