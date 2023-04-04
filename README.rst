@@ -6,6 +6,15 @@ between opticks and junosw by splitting off classes/struct that
 depend only on Geant4 so as to allow high level communication 
 between opticks and junosw in the "language" provided by Custom4. 
 
+References to Opticks and other related packages 
+--------------------------------------------------
+
+* https://simoncblyth.bitbucket.io/
+* https://simoncblyth.github.io/
+
+
+Classes/Structs
+------------------
 
 C4OpBoundaryProcess.hh
    modified G4OpBoundaryProcess with customized calculation 
