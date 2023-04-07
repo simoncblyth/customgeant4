@@ -17,7 +17,7 @@ set(name Custom4)
 project(${name})
 set(${PROJECT_NAME}_VERSION_MAJOR 0) 
 set(${PROJECT_NAME}_VERSION_MINOR 1)  
-set(${PROJECT_NAME}_VERSION_PATCH 2)  
+set(${PROJECT_NAME}_VERSION_PATCH 3)  
 set(${PROJECT_NAME}_VERSION "${${PROJECT_NAME}_VERSION_MAJOR}.${${PROJECT_NAME}_VERSION_MINOR}.${${PROJECT_NAME}_VERSION_PATCH}")
 
 
@@ -118,6 +118,10 @@ get_filename_component(Custom4_LIBRARY_DIR  \"\${CMAKE_CURRENT_LIST_FILE}/../..\
 get_filename_component(Custom4_PREFIX       \"\${CMAKE_CURRENT_LIST_FILE}/../../..\" ABSOLUTE)
 get_filename_component(Custom4_INCLUDE_DIR  \"\${Custom4_PREFIX}/${CUSTOM4_RELATIVE_INCDIR}\" ABSOLUTE)
 
+# include(\"\${Custom4_CMAKE_DIR}/Custom4ConfigVersion.cmake\")  
+# this appears to be automatically included by find_package
+
+
 find_library(Custom4_LIBRARY_PATH
            NAMES Custom4
            PATHS \${Custom4_LIBRARY_DIR}
@@ -145,6 +149,7 @@ if(Custom4_VERBOSE)
     message(STATUS \"Custom4_LIBRARIES     : \${Custom4_LIBRARIES} \")
     message(STATUS \"Custom4_CMAKE_PATH    : \${Custom4_CMAKE_PATH} \")
     message(STATUS \"Custom4_CMAKE_DIR     : \${Custom4_CMAKE_DIR} \")
+
 endif()
 
 set(_tgt Custom4::Custom4)
