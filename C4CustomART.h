@@ -74,15 +74,18 @@ Do you agree with this argument ?
 #include "C4IPMTAccessor.h"
 #include "C4MultiLayrStack.h"  
 #include "C4Touchable.h"
-#include "C4CustomART_Debug.h"
 
+#ifdef C4_DEBUG
+#include "C4CustomART_Debug.h"
+#endif
 
 struct C4CustomART
 {
     int    count ; 
     double zlocal ; 
+#ifdef C4_DEBUG
     double lposcost ; 
-
+#endif
     const C4IPMTAccessor* accessor ; 
 
     G4double& theAbsorption ;
@@ -96,7 +99,9 @@ struct C4CustomART
     const G4ThreeVector& theRecoveredNormal ; 
     const G4double& thePhotonMomentum ; 
 
+#ifdef C4_DEBUG
     C4CustomART_Debug dbg ;  
+#endif
 
     C4CustomART(
         const C4IPMTAccessor* accessor, 
@@ -111,7 +116,6 @@ struct C4CustomART
         const G4double& thePhotonMomentum
     );  
 
-    //char maybe_doIt(const char* OpticalSurfaceName, const G4Track& aTrack, const G4Step& aStep) ;  
     double local_z( const G4Track& aTrack ); 
     void doIt(const G4Track& aTrack, const G4Step& ); 
     std::string desc() const ; 
@@ -133,7 +137,9 @@ inline C4CustomART::C4CustomART(
     :
     count(0),
     zlocal(-1.),
+#ifdef C4_DEBUG
     lposcost(-2.),
+#endif
     accessor(accessor_),
     theAbsorption(theAbsorption_),
     theReflectivity(theReflectivity_),
@@ -143,12 +149,12 @@ inline C4CustomART::C4CustomART(
     OldMomentum(OldMomentum_),
     OldPolarization(OldPolarization_),
     theRecoveredNormal(theRecoveredNormal_),
-    thePhotonMomentum(thePhotonMomentum_) 
+    thePhotonMomentum(thePhotonMomentum_)
 {
 }
 
 /**
-C4CustomART::is_upper_z
+C4CustomART::local_z
 -------------------------
 
 Q:What is lposcost for ?  
@@ -170,7 +176,9 @@ inline double C4CustomART::local_z( const G4Track& aTrack )
     const G4AffineTransform& transform = aTrack.GetTouchable()->GetHistory()->GetTopTransform();
     G4ThreeVector localPoint = transform.TransformPoint(theGlobalPoint);
     zlocal = localPoint.z() ; 
+#ifdef C4_DEBUG
     lposcost = localPoint.cosTheta() ;  
+#endif
     return zlocal  ; 
 }
 
@@ -300,8 +308,7 @@ inline void C4CustomART::doIt(const G4Track& aTrack, const G4Step& )
         ;
     assert( expect ); 
 
-
-    // TODO: disable the debug collection once validates
+#ifdef C4_DEBUG
     dbg.A = A ; 
     dbg.R = R ; 
     dbg.T = T ; 
@@ -315,6 +322,7 @@ inline void C4CustomART::doIt(const G4Track& aTrack, const G4Step& )
     dbg.minus_cos_theta = minus_cos_theta ; 
     dbg.wavelength_nm   = wavelength_nm ; 
     dbg.pmtid           = double(pmtid) ; 
+#endif
 
     count += 1 ; 
 }
