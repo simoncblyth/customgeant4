@@ -16,9 +16,32 @@ probablility of being able to stay unchanged.
 
 struct C4Track
 {
-    static int  GetLabelId(   const G4Track* track ); 
-    static int  GetLabelFlag( const G4Track* track ); 
-    static void SetLabelFlag( const G4Track* track, int flag ); 
+    enum { GS, IX, ID } ; 
+    static int  GetLabelVA(const G4Track* track, int i ); 
+    static int  GetLabelGS(const G4Track* track ); 
+    static int  GetLabelIX(const G4Track* track ); 
+    static int  GetLabelID(const G4Track* track ); 
+
+    enum { GEN, EPH, EXT, FLG } ;  
+    static int  GetLabelValue( const G4Track* track, int i ); 
+    static void SetLabelValue( const G4Track* track, int i, int value ); 
+    static void IncrementLabelValue(const G4Track* track, int i ); 
+
+    static int  GetLabelGen( const G4Track* track ); 
+    static int  GetLabelEph( const G4Track* track ); 
+    static int  GetLabelExt( const G4Track* track ); 
+    static int  GetLabelFlg( const G4Track* track ); 
+
+    static void SetLabelGen( const G4Track* track, int gen ); 
+    static void SetLabelEph( const G4Track* track, int eph ); 
+    static void SetLabelExt( const G4Track* track, int ext ); 
+    static void SetLabelFlg( const G4Track* track, int flg ); 
+
+    static void IncrementLabelGen( const G4Track* track ); 
+    static void IncrementLabelEph( const G4Track* track ); 
+    static void IncrementLabelExt( const G4Track* track ); 
+    static void IncrementLabelFlg( const G4Track* track ); 
+
     static std::string Desc( const G4Track* track );  
 
     // below methods are mainly for low level testing 
@@ -28,21 +51,54 @@ struct C4Track
 };
 
 
-inline int C4Track::GetLabelId( const G4Track* track )
+inline int C4Track::GetLabelVA( const G4Track* track, int i )
 {
     const C4Pho* label = C4TrackInfo<C4Pho>::GetRef(track); 
-    return label ? label->id : -1 ; 
+    return label ? label->get_va(i) : -1 ; 
 }
-inline int C4Track::GetLabelFlag(const G4Track* track )
+inline int C4Track::GetLabelGS( const G4Track* track ){ return GetLabelVA(track, GS) ; }
+inline int C4Track::GetLabelIX( const G4Track* track ){ return GetLabelVA(track, IX) ; }
+inline int C4Track::GetLabelID( const G4Track* track ){ return GetLabelVA(track, ID) ; }
+
+
+
+inline int C4Track::GetLabelValue(const G4Track* track, int i )
 {
     const C4Pho* label = C4TrackInfo<C4Pho>::GetRef(track); 
-    return label->flg() ; 
+    return label ? label->value(i) : -1 ; 
 }
-inline void C4Track::SetLabelFlag(const G4Track* track, int flag )
+inline void C4Track::SetLabelValue(const G4Track* track, int i, int val )
 {
     C4Pho* label = C4TrackInfo<C4Pho>::GetRef(track); 
-    label->set_flg(flag); 
+    if(label == nullptr) return ; 
+    label->set_value(i, val ); 
 }
+inline void C4Track::IncrementLabelValue(const G4Track* track, int i )
+{
+    C4Pho* label = C4TrackInfo<C4Pho>::GetRef(track); 
+    if(label == nullptr) return ; 
+    label->increment_value(i); 
+}
+
+inline int C4Track::GetLabelGen(const G4Track* track){ return GetLabelValue(track, GEN) ; }
+inline int C4Track::GetLabelEph(const G4Track* track){ return GetLabelValue(track, EPH) ; }
+inline int C4Track::GetLabelExt(const G4Track* track){ return GetLabelValue(track, EXT) ; }
+inline int C4Track::GetLabelFlg(const G4Track* track){ return GetLabelValue(track, FLG) ; }
+
+inline void C4Track::SetLabelGen(const G4Track* track, int gen ){ SetLabelValue(track, GEN, gen ) ; }
+inline void C4Track::SetLabelEph(const G4Track* track, int eph ){ SetLabelValue(track, EPH, eph ) ; }
+inline void C4Track::SetLabelExt(const G4Track* track, int ext ){ SetLabelValue(track, EXT, ext ) ; }
+inline void C4Track::SetLabelFlg(const G4Track* track, int flg ){ SetLabelValue(track, FLG, flg ) ; }
+
+inline void C4Track::IncrementLabelGen(const G4Track* track){ IncrementLabelValue(track, GEN ); }
+inline void C4Track::IncrementLabelEph(const G4Track* track){ IncrementLabelValue(track, EPH ); }
+inline void C4Track::IncrementLabelExt(const G4Track* track){ IncrementLabelValue(track, EXT ); }
+inline void C4Track::IncrementLabelFlg(const G4Track* track){ IncrementLabelValue(track, FLG ); }
+
+
+
+
+
 
 inline std::string C4Track::Desc( const G4Track* track )
 {

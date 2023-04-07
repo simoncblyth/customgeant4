@@ -37,6 +37,9 @@ struct C4Pho
     int ix ; // 0-based photon index within the genstep
     int id ; // 0-based photon identity index within the event 
 
+    int get_va(int i) const ; 
+
+
     C4Pho_uchar4 uc4 ;  
     // uc4.x : gen : 0-based reemission index incremented at each reemission 
     // uc4.y : eph : eg junoSD_PMT_v2::ProcessHits eph enumeration 
@@ -54,6 +57,11 @@ struct C4Pho
     void set_eph(int ep) ; 
     void set_ext(int ex) ; 
     void set_flg(int fg) ; 
+
+    int  value(int i) const; 
+    void set_value(int i, int value); 
+    void increment_value(int i); 
+
  
     static C4Pho MakePho(int gs_, int ix_, int id_ );   
     static C4Pho Fabricate(int track_id); 
@@ -86,15 +94,64 @@ inline unsigned C4Pho::uc4packed() const
     return uuc4.u ;    
 }
 
+inline int C4Pho::get_va(int i) const 
+{
+    int va = -1 ; 
+    switch(i)
+    {
+       case 0: va = gs ; break ; 
+       case 1: va = ix ; break ; 
+       case 2: va = id ; break ; 
+    }
+    return va ; 
+}
+
 inline int C4Pho::gen() const { return int(uc4.x); }
 inline int C4Pho::eph() const { return int(uc4.y); }
 inline int C4Pho::ext() const { return int(uc4.z); }
 inline int C4Pho::flg() const { return int(uc4.w); }
 
+
 inline void C4Pho::set_gen(int gn) { uc4.x = (unsigned char)(gn) ; }
 inline void C4Pho::set_eph(int ep) { uc4.y = (unsigned char)(ep) ; }
 inline void C4Pho::set_ext(int ex) { uc4.z = (unsigned char)(ex) ; }
 inline void C4Pho::set_flg(int fg) { uc4.w = (unsigned char)(fg) ; }
+
+
+inline int C4Pho::value(int i) const
+{
+    int value = -1 ; 
+    switch(i)
+    {
+        case 0: value = gen() ; break ;  
+        case 1: value = eph() ; break ;  
+        case 2: value = ext() ; break ;  
+        case 3: value = flg() ; break ;  
+    }
+    return value ; 
+}
+
+inline void C4Pho::set_value(int i, int value) 
+{
+    switch(i)
+    {
+        case 0: set_gen(value) ; break ;  
+        case 1: set_eph(value) ; break ;  
+        case 2: set_ext(value) ; break ;  
+        case 3: set_flg(value) ; break ;  
+    }
+}
+
+inline void C4Pho::increment_value(int i)
+{
+    int val = value(i) ; 
+    set_value(i, val+1 ); 
+} 
+
+
+
+
+
 
 
 inline C4Pho C4Pho::MakePho(int gs_, int ix_, int id_) // static
