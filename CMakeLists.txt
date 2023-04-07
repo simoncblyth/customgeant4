@@ -17,7 +17,7 @@ set(name Custom4)
 project(${name})
 set(${PROJECT_NAME}_VERSION_MAJOR 0) 
 set(${PROJECT_NAME}_VERSION_MINOR 1)  
-set(${PROJECT_NAME}_VERSION_PATCH 1)  
+set(${PROJECT_NAME}_VERSION_PATCH 2)  
 set(${PROJECT_NAME}_VERSION "${${PROJECT_NAME}_VERSION_MAJOR}.${${PROJECT_NAME}_VERSION_MINOR}.${${PROJECT_NAME}_VERSION_PATCH}")
 
 
@@ -88,6 +88,7 @@ set(HEADERS
     C4TrackInfo.h
     C4Track.h
     C4Pho.h
+    C4GS.h
     C4Sys.h 
 )
 
