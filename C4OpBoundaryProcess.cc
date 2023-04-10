@@ -200,8 +200,7 @@ G4VParticleChange*
 C4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 {
         m_track_label = C4TrackInfo<C4Pho>::GetRef(&aTrack);
-        assert( m_track_label ); 
-        m_track_dump = ( m_track_label->id == PIDX && PIDX_ENABLED ) || PIDX == -2  ; 
+        m_track_dump = ( m_track_label != nullptr && m_track_label->id == PIDX && PIDX_ENABLED ) || PIDX == -2  ; 
 
         theStatus = Undefined;
         m_custom_status = 'U' ;
