@@ -246,6 +246,47 @@ So the 3-way probabilities are scaled into 2-way ones, eg::
      ->( R, T)   (    --------  ,  -------- ) =  ( 0.5, 0.5 )
                        (1-0.5)     (1-0.5) ) 
 
+
+E_s2 : how that corresponds to polarization power fraction
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+     mom       nrm
+         +--s--+
+          \    |
+           \   | 
+     pol.   \  |  
+             \ | 
+              \|
+     ----------0-------
+
+OldMomentum.cross(theRecoveredNormal) 
+    transverse direction, eg out the page 
+    (OldMomentum, theRecoveredNoraml are normalized, 
+    so magnitude will be sine of angle between mom and nrm) 
+
+(OldPolarization*OldMomentum.cross(theRecoveredNormal)) 
+    dot product between the OldPolarization and transverse direction
+    is expressing the S polarization fraction
+    (OldPolarization is normalized so the magnitude will be 
+     cos(angle-between-pol-and-transverse)*sin(angle-between-mom-and-nrm)
+
+    * hmm pulling out "pol_dot_mom_cross_nrm" argument would provide some splitting 
+    * dot product with a cross product is the determinant of the three vectors, 
+      thats the volume of the parallelopiped formed by the vectors 
+      
+
+stack.ll[0].st.real()
+    thus is just sqrt(1.-mct*mct) so its "st" sine(angle-between-mom-and-normal)
+   
+    * mct is OldMomentum*theRecoveredNormal (both those are normalized) 
+    * no need to involve stack or stackspec  
+
+(OldPolarization*OldMomentum.cross(theRecoveredNormal))/stack.ll[0].st.real()
+    division by "st" brings this to cos(angle-betweel-pol-and-tranverse)
+    so it does represent the S polarization fraction 
+
 **/
 
 inline void C4CustomART::doIt(const G4Track& aTrack, const G4Step& )
@@ -268,7 +309,7 @@ inline void C4CustomART::doIt(const G4Track& aTrack, const G4Step& )
 
     Stack<double,4> stack(wavelength_nm, minus_cos_theta, spec );  
 
-    const double _si = stack.ll[0].st.real() ; 
+    const double _si = stack.ll[0].st.real() ; // sqrt(one - minus_cos_theta*minus_cos_theta) 
     double E_s2 = _si > 0. ? (OldPolarization*OldMomentum.cross(theRecoveredNormal))/_si : 0. ; 
     E_s2 *= E_s2;      
 
