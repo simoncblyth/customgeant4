@@ -288,10 +288,13 @@ stack.ll[0].st.real()
     so it does represent the S polarization fraction 
 
 **/
-
 inline void C4CustomART::doIt(const G4Track& aTrack, const G4Step& )
 {
+    G4double zero = 0. ; 
+    G4double minus_one = -1. ; 
     G4double minus_cos_theta = OldMomentum*theRecoveredNormal ; 
+    G4double dot_pol_cross_mom_nrm = OldPolarization*OldMomentum.cross(theRecoveredNormal) ; 
+
     G4double energy = thePhotonMomentum ; 
     G4double wavelength = CLHEP::twopi*CLHEP::hbarc/energy ;
     G4double energy_eV = energy/CLHEP::eV ;
@@ -299,55 +302,42 @@ inline void C4CustomART::doIt(const G4Track& aTrack, const G4Step& )
 
     int pmtid = C4Touchable::VolumeIdentifier(&aTrack, true ); 
     int pmtcat = accessor->get_pmtcat( pmtid ) ; 
-    double _qe = minus_cos_theta > 0. ? 0.0 : accessor->get_pmtid_qe( pmtid, energy ) ;  
+    double _qe = minus_cos_theta > 0. ? 0.0 : accessor->get_pmtid_qe( pmtid, energy ) ;  // energy_eV ?
     // following the old junoPMTOpticalModel with "backwards" _qe always zero 
 
     std::array<double,16> a_spec ; 
     accessor->get_stackspec(a_spec, pmtcat, energy_eV ); 
-    StackSpec<double,4> spec ; 
-    spec.import( a_spec ); 
 
-    Stack<double,4> stack(wavelength_nm, minus_cos_theta, spec );  
+    const double* ss = a_spec.data() ; 
 
-    const double _si = stack.ll[0].st.real() ; // sqrt(one - minus_cos_theta*minus_cos_theta) 
-    double E_s2 = _si > 0. ? (OldPolarization*OldMomentum.cross(theRecoveredNormal))/_si : 0. ; 
-    E_s2 *= E_s2;      
+    Stack<double,4> stack ; 
 
-    // E_s2 : S-vs-P power fraction : signs make no difference as squared
-    // E_s2 matches E1_perp*E1_perp see sysrap/tests/stmm_vs_sboundary_test.cc 
+    theEfficiency = zero ;
+    if( minus_cos_theta < zero ) // only ingoing photons 
+    {
+        stack.calc( wavelength_nm, minus_one, zero, ss, 16u );  
+        theEfficiency = _qe/stack.art.A ;    // aka escape_fac
 
-    double one = 1.0 ; 
-    double S = E_s2 ; 
-    double P = one - S ; 
+        bool expect = theEfficiency <= 1. ; 
+        if(!expect) std::cerr
+            << "CustomART::doIt"
+            << " FATAL "
+            << " ERR: theEfficiency > 1. : " << theEfficiency
+            << " _qe " << _qe
+            << " stack.art.A (aka An) " << stack.art.A 
+            << std::endl 
+            ;
+        assert( expect ); 
+    }
+    stack.calc( wavelength_nm, minus_cos_theta, dot_pol_cross_mom_nrm, ss, 16u );  
 
-    double T = S*stack.art.T_s + P*stack.art.T_p ;  // matched with TransCoeff see sysrap/tests/stmm_vs_sboundary_test.cc
-    double R = S*stack.art.R_s + P*stack.art.R_p ;
-    double A = S*stack.art.A_s + P*stack.art.A_p ;  
-    //double A1 = one - (T+R);  // note that A1 matches A 
+    const double& A = stack.art.A ; 
+    const double& R = stack.art.R ; 
+    const double& T = stack.art.T ; 
 
     theAbsorption = A ; 
     theReflectivity  = R/(1.-A) ; 
     theTransmittance = T/(1.-A)  ;   
-
-    // stackNormal is not flipped (as minus_cos_theta is fixed at -1.) presumably this is due to _qe definition
-    Stack<double,4> stackNormal(wavelength_nm, -1. , spec ); 
-
-    // at normal incidence S/P distinction is meaningless, and the values converge anyhow : so no polarization worries here
-    //double An = stackNormal.art.A ; 
-    double An = one - (stackNormal.art.T + stackNormal.art.R) ; 
-    double escape_fac = _qe/An;   
-    theEfficiency = escape_fac ; 
-
-    bool expect = theEfficiency <= 1. ; 
-    if(!expect) std::cerr
-        << "CustomART::doIt"
-        << " FATAL "
-        << " ERR: theEfficiency > 1. : " << theEfficiency
-        << " _qe " << _qe
-        << " An " << An
-        << std::endl 
-        ;
-    assert( expect ); 
 
 #ifdef C4_DEBUG
     dbg.A = A ; 

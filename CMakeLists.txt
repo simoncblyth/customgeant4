@@ -165,6 +165,9 @@ endif()
 ")
 
 
+# Template/Custom4Config.cmake.in consists only of @CUSTOM4_SETUP@ token
+# which places the above variable into Custom4Config.cmake
+#
 configure_file(
   ${PROJECT_SOURCE_DIR}/cmake/Templates/Custom4Config.cmake.in
   ${PROJECT_BINARY_DIR}/Custom4Config.cmake

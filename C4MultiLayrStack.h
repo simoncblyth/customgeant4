@@ -1,6 +1,6 @@
 #pragma once
 /**
-MultiLayrStack.h : Thin/Thick Multi-layer Stack TMM "Transfer Matrix Method" A,R,T calculation 
+C4MultiLayrStack.h : Thin/Thick Multi-layer Stack TMM "Transfer Matrix Method" A,R,T calculation 
 =====================================================================================================
 
 This was developed and tested as Layr.h at https://github.com/simoncblyth/j/blob/main/Layr/Layr.h
@@ -282,9 +282,30 @@ inline std::ostream& operator<<(std::ostream& os, const Layr<T>& l)
 }
 #endif
 
+/**
+OLD_ART_  : Old inherited crazy layout  
+----------------------------------------
+
+   +---+--------+--------+--------+--------+
+   |   |  x     |  y     |  z     |  w     |
+   +===+========+========+========+========+
+   | 0 |  R_s   |  R_p   |  T_s   |  T_p   |
+   +---+--------+--------+--------+--------+
+   | 1 |  A_s   |  A_p   |  R_av  |  T_av  |
+   +---+--------+--------+--------+--------+
+   | 2 |  A_av  | ART_av |  wl    |  mct   |
+   +---+--------+--------+--------+--------+
+   | 3 |  A     | R      |  T     |  S     |
+   +---+--------+--------+--------+--------+
+
+
+**/
+
 template<typename F>
-struct ART_
+struct OLD_ART_
 {   
+    // NB old inherited crazy layout  
+
     F R_s;     // R_s = a.arts[:,0,0]
     F R_p;     // R_p = a.arts[:,0,1]
     F T_s;     // T_s = a.arts[:,0,2]
@@ -309,258 +330,100 @@ struct ART_
     // persisted into shape (4,4) 
 };
 
+
+
+/**
+ART_ : rationalized layout  
+----------------------------------------
+
++---+--------+--------+--------+--------+
+|   |  x     |  y     |  z     |  w     |
++===+========+========+========+========+
+| 0 |  A_s   |  A_p   |  A_av  |  A     |
++---+--------+--------+--------+--------+
+| 1 |  R_s   |  R_p   |  R_av  |  R     |
++---+--------+--------+--------+--------+
+| 2 |  T_s   |  T_p   |  T_av  |  T     |
++---+--------+--------+--------+--------+
+| 3 |  SF    |  wl    | ART_av |  mct   |
++---+--------+--------+--------+--------+
+
+Checking A+R+T is very close to 1.::
+
+    art = f.art.squeeze() 
+    art_sum = np.sum(art[:,:3], axis=1 )   
+    one_dev =  np.abs( art_sum - 1. ).max() 
+    assert one_dev < 1e-6 
+
+TODO: remove _av as pointless 
+
+**/
+
+template<typename F>
+struct ART_
+{
+    F A_s;     // A_s  = a.arts[:,0,0]
+    F A_p;     // A_p  = a.arts[:,0,1]
+    F A_av;    // A_av = a.arts[:,0,2]
+    F A ;      // A    = a.arts[:,0,3]
+
+    F R_s;     // R_s = a.arts[:,1,0]
+    F R_p;     // R_p = a.arts[:,1,1]
+    F R_av;    // R_av= a.arts[:,1,2]
+    F R ;      // R   = a.arts[:,1,3]
+
+    F T_s;     // T_s  = a.arts[:,2,0]
+    F T_p;     // T_p  = a.arts[:,2,1]
+    F T_av;    // T_av = a.arts[:,2,2]
+    F T ;      // T    = a.arts[:,2,3]
+
+    F SF ;      // SF        = a.arts[:,3,0]     S_pol vs P_pol power fraction 
+    F wl ;      // wl       = a.arts[:,3,1]
+    F ART_av ;  // ART_av   = a.arts[:,3,2] 
+    F mct ;     // mct      = a.arts[:,3,3]   
+
+    LAYR_METHOD const F* cdata() const { return &A_s ; }
+    // persisted into shape (4,4) 
+};
+
+
+
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
 template<typename F>
 inline std::ostream& operator<<(std::ostream& os, const ART_<F>& art )  
 {
     os 
-        << "ART_" << std::endl 
-        << " R_s " << std::fixed << std::setw(10) << std::setprecision(4) << art.R_s 
-        << " R_p " << std::fixed << std::setw(10) << std::setprecision(4) << art.R_p 
+        << "ART_" 
         << std::endl 
-        << " T_s " << std::fixed << std::setw(10) << std::setprecision(4) << art.T_s 
-        << " T_p " << std::fixed << std::setw(10) << std::setprecision(4) << art.T_p 
+        << "  A_s  " << std::fixed << std::setw(10) << std::setprecision(4) << art.A_s 
+        << "  A_p  " << std::fixed << std::setw(10) << std::setprecision(4) << art.A_p 
+        << "  A_av " << std::fixed << std::setw(10) << std::setprecision(4) << art.A_av  
+        << "  A    " << std::fixed << std::setw(10) << std::setprecision(4) << art.A  
         << std::endl 
-        << " A_s " << std::fixed << std::setw(10) << std::setprecision(4) << art.A_s 
-        << " A_p " << std::fixed << std::setw(10) << std::setprecision(4) << art.A_p 
+        << "  R_s  " << std::fixed << std::setw(10) << std::setprecision(4) << art.R_s 
+        << "  R_p  " << std::fixed << std::setw(10) << std::setprecision(4) << art.R_p 
+        << "  R_av " << std::fixed << std::setw(10) << std::setprecision(4) << art.R_av   
+        << "  R    " << std::fixed << std::setw(10) << std::setprecision(4) << art.R
         << std::endl 
-        << " R_av " << std::fixed << std::setw(10) << std::setprecision(4) << art.R_av   
-        << " T_av " << std::fixed << std::setw(10) << std::setprecision(4) << art.T_av   
-        << " A_av " << std::fixed << std::setw(10) << std::setprecision(4) << art.A_av  
-        << " A_R_T_av " << std::fixed << std::setw(10) << std::setprecision(4) << art.A_R_T_av 
+        << "  T_s  " << std::fixed << std::setw(10) << std::setprecision(4) << art.T_s 
+        << "  T_p  " << std::fixed << std::setw(10) << std::setprecision(4) << art.T_p 
+        << "  T_av " << std::fixed << std::setw(10) << std::setprecision(4) << art.T_av   
+        << "  T    " << std::fixed << std::setw(10) << std::setprecision(4) << art.T   
         << std::endl 
-        << " R " << std::fixed << std::setw(10) << std::setprecision(4) << art.R
-        << " T " << std::fixed << std::setw(10) << std::setprecision(4) << art.T   
-        << " A " << std::fixed << std::setw(10) << std::setprecision(4) << art.A  
-        << " S " << std::fixed << std::setw(10) << std::setprecision(4) << art.S 
+        << " SUM_s " << std::fixed << std::setw(10) << std::setprecision(4) << art.A_s + art.R_s + art.T_s
+        << " SUM_p " << std::fixed << std::setw(10) << std::setprecision(4) << art.A_p + art.R_p + art.T_p
+        << " SUM_a " << std::fixed << std::setw(10) << std::setprecision(4) << art.A_av + art.R_av + art.T_av
+        << " SUM_  " << std::fixed << std::setw(10) << std::setprecision(4) << art.A    + art.R    + art.T
         << std::endl 
-        << " wl  " << std::fixed << std::setw(10) << std::setprecision(4) << art.wl  << std::endl 
-        << " mct " << std::fixed << std::setw(10) << std::setprecision(4) << art.mct << std::endl 
+        << " SF    " << std::fixed << std::setw(10) << std::setprecision(4) << art.SF 
+        << " wl    " << std::fixed << std::setw(10) << std::setprecision(4) << art.wl 
+        << " ART_av" << std::fixed << std::setw(10) << std::setprecision(4) << art.ART_av 
+        << " mct  " << std::fixed << std::setw(10) << std::setprecision(4) << art.mct
+        << std::endl 
         ;
     return os; 
 }
-#endif
-
-
-#if defined(__CUDACC__) || defined(__CUDABE__)
-#else
-namespace sys
-{
-    template<typename F>
-    inline std::vector<F>* getenvvec(const char* ekey, const char* fallback = nullptr, char delim=',')
-    {
-        char* _line = getenv(ekey);
-        const char* line = _line ? _line : fallback ; 
-        if(line == nullptr) return nullptr ; 
-
-        std::stringstream ss; 
-        ss.str(line);
-        std::string s;
-
-        std::vector<F>* vec = new std::vector<F>() ; 
-
-        while (std::getline(ss, s, delim)) 
-        {   
-            std::istringstream iss(s);
-            F f ; 
-            iss >> f ; 
-            vec->push_back(f) ; 
-        }   
-        return vec ; 
-    }
-
-    template<typename F, unsigned long N>
-    inline F max_diff( const std::array<F,N>& a, const std::array<F,N>& b )
-    {
-        F mx = 0. ; 
-        for(unsigned long i=0 ; i < N ; i++) 
-        {
-            F df = std::abs(a[i]-b[i]) ; 
-            if(df > mx ) mx = df ; 
-        } 
-        return mx ; 
-    }
-
-    template<typename F, unsigned long N>
-    inline std::string desc_diff( const std::array<F,N>& a, const std::array<F,N>& b )
-    {
-        std::stringstream ss ; 
-        for(unsigned long i=0 ; i < N ; i++) 
-        {
-            ss 
-                << " i " << std::setw(2) << i   
-                << " a " << std::setw(10) << std::scientific << a[i]
-                << " b " << std::setw(10) << std::scientific << b[i]
-                << " a - b  " << std::setw(10) << std::scientific << ( a[i] - b[i] )
-                << std::endl 
-                ;   
-        }
-        std::string str = ss.str(); 
-        return str ; 
-    }
-
-}
-#endif
-
-
-template<typename F>
-struct LayrSpec
-{
-    F nr, ni, d, pad  ; 
-
-#if defined(__CUDACC__) || defined(__CUDABE__)
-#else
-    void serialize(std::array<F,4>& a) const ; 
-    static int EGet(LayrSpec<F>& ls, int idx); 
-#endif
-};
-
-#if defined(__CUDACC__) || defined(__CUDABE__)
-#else
-template<typename F>
-LAYR_METHOD void LayrSpec<F>::serialize(std::array<F,4>& a) const 
-{
-    a[0] = nr ; 
-    a[1] = ni ; 
-    a[2] = d ; 
-    a[3] = pad  ;  
-}
-
-template<typename F>
-LAYR_METHOD int LayrSpec<F>::EGet(LayrSpec<F>& ls, int idx)
-{
-    std::stringstream ss ; 
-    ss << "L" << idx ; 
-    std::string ekey = ss.str(); 
-    std::vector<F>* vls = sys::getenvvec<F>(ekey.c_str()) ; 
-    if(vls == nullptr) return 0 ; 
-    const F zero(0) ; 
-    ls.nr = vls->size() > 0u ? (*vls)[0] : zero ; 
-    ls.ni = vls->size() > 1u ? (*vls)[1] : zero ; 
-    ls.d  = vls->size() > 2u ? (*vls)[2] : zero ; 
-    ls.pad = zero ; 
-    return 1 ; 
-}
-
-template<typename F>
-LAYR_METHOD std::ostream& operator<<(std::ostream& os, const LayrSpec<F>& ls )  
-{
-    os 
-        << "LayrSpec<" << ( sizeof(F) == 8 ? "double" : "float" ) << "> "  
-        << std::fixed << std::setw(10) << std::setprecision(4) << ls.nr << " "
-        << std::fixed << std::setw(10) << std::setprecision(4) << ls.ni << " ; "
-        << std::fixed << std::setw(10) << std::setprecision(4) << ls.d  << ")"
-        << std::endl 
-        ;
-    return os ; 
-}
-#endif
-
-
-template<typename F, int N>  
-struct StackSpec
-{
-    LayrSpec<F> ls[N] ; 
-#if defined(__CUDACC__) || defined(__CUDABE__)
-#else
-    LAYR_METHOD void eget() ; 
-    LAYR_METHOD F* data() const ; 
-    LAYR_METHOD const F* cdata() const ; 
-    LAYR_METHOD void serialize(std::array<F,N*4>& a) const ; 
-    LAYR_METHOD void import(const std::array<F,N*4>& a) ;  
-    LAYR_METHOD bool is_equal( const StackSpec<F,N>& other ) const ; 
-    LAYR_METHOD std::string desc_compare( const StackSpec<F,N>& other ) const  ; 
-#endif
-
-}; 
-
-#if defined(__CUDACC__) || defined(__CUDABE__)
-#else
-template<typename F, int N>
-LAYR_METHOD void StackSpec<F,N>::eget()  
-{
-    int count = 0 ; 
-    for(int i=0 ; i < N ; i++) count += LayrSpec<F>::EGet(ls[i], i); 
-    assert( count == N ) ; 
-}
-
-template<typename F, int N>
-LAYR_METHOD F* StackSpec<F,N>::data() const 
-{
-    return (F*)&(ls[0].nr) ; 
-}
-
-template<typename F, int N>
-LAYR_METHOD const F* StackSpec<F,N>::cdata() const 
-{
-    return (F*)&(ls[0].nr) ; 
-}
-
-template<typename F, int N>
-LAYR_METHOD void StackSpec<F,N>::serialize(std::array<F,N*4>& a) const 
-{
-    for(int i=0 ; i < N ; i++)
-    {
-        std::array<F,4> ls_i ; 
-        ls[i].serialize(ls_i) ; 
-        for(int j=0 ; j < 4 ; j++) a[i*4+j] = ls_i[j] ;   
-    }
-}
-
-template<typename F, int N>
-LAYR_METHOD void StackSpec<F,N>::import(const std::array<F,N*4>& a) 
-{
-    memcpy( data(), a.data(), a.size()*sizeof(F) );  
-}
-
-template<typename F, int N>
-LAYR_METHOD bool StackSpec<F,N>::is_equal( const StackSpec<F,N>& other ) const 
-{
-    std::array<F, N*4> a ; 
-    serialize(a) ; 
-
-    std::array<F, N*4> b ; 
-    other.serialize(b); 
-
-    return a == b ; 
-}
-
-
-template<typename F, int N>
-LAYR_METHOD std::string StackSpec<F,N>::desc_compare( const StackSpec<F,N>& other ) const 
-{
-    std::array<F, N*4> a ; 
-    serialize(a) ; 
-
-    std::array<F, N*4> b ; 
-    other.serialize(b); 
-
-    F mx = sys::max_diff(a, b) ; 
-
-    std::stringstream ss ; 
-    ss << "StackSpec<" << ( sizeof(F) == 8 ? "double" : "float" ) << "," << N << ">::desc_compare " ;  
-    ss << " is_equal " << ( is_equal(other) ? "YES" : "NO"  ) ; 
-    ss << " max_diff " << std::setw(10) << std::scientific << mx ; 
-    ss << std::endl  ; 
-
-    for(int i=0 ; i < 4*N ; i++) ss 
-        << ( i % 4 == 0  ? "\n" : " " ) 
-        << ( a[i] == b[i] ? " " : "[" ) 
-        << std::fixed << std::setw(10) << std::setprecision(4) << a[i] << " " 
-        << std::fixed << std::setw(10) << std::setprecision(4) << b[i] << " " 
-        << ( a[i] == b[i] ? " " : "]" ) 
-        ;
-
-    std::string str = ss.str(); 
-    return str ; 
-}
-
-
-
-
-
-
 
 template<typename F>
 LAYR_METHOD std::ostream& operator<<(std::ostream& os, const std::array<F,16>& aa )
@@ -572,21 +435,6 @@ LAYR_METHOD std::ostream& operator<<(std::ostream& os, const std::array<F,16>& a
         << std::setw(10) << std::fixed << std::setprecision(4) << aa[i] 
         ;   
     os << std::endl ; 
-    return os ; 
-}
-
-template<typename F, int N>
-LAYR_METHOD std::ostream& operator<<(std::ostream& os, const StackSpec<F,N>& ss )  
-{
-    os 
-        << std::endl 
-        << "StackSpec<" 
-        << ( sizeof(F) == 8 ? "double" : "float" ) 
-        << "," << N
-        << ">"  
-        << std::endl ;
-
-    for(int i=0 ; i < N ; i++) os << ss.ls[i] ; 
     return os ; 
 }
 
@@ -608,8 +456,8 @@ struct Stack
 
     LAYR_METHOD void zero();
     LAYR_METHOD Stack();
-    LAYR_METHOD Stack(F wl, F minus_cos_theta, F dot_pol_cross_mom_nrm, const StackSpec<F,N>& ss);
-    LAYR_METHOD void calc(F wl, F minus_cos_theta, F dot_pol_cross_mom_nrm, const StackSpec<F,N>& ss);
+    LAYR_METHOD Stack(    F wl, F minus_cos_theta, F dot_pol_cross_mom_nrm, const F* ss, unsigned num_ss );
+    LAYR_METHOD void calc(F wl, F minus_cos_theta, F dot_pol_cross_mom_nrm, const F* ss, unsigned num_ss );
 
     LAYR_METHOD const F* cdata() const { return ll[0].cdata() ; }
 
@@ -662,13 +510,39 @@ Stack::Stack ctor : does TMM A,R,T calc
 **/
 
 template<typename F, int N>
-LAYR_METHOD Stack<F,N>::Stack(F wl, F minus_cos_theta, F dot_pol_cross_mom_nrm, const StackSpec<F,N>& ss ) 
+LAYR_METHOD Stack<F,N>::Stack(F wl, F minus_cos_theta, F dot_pol_cross_mom_nrm, const F* ss, unsigned num_ss ) 
 {
-    calc(wl, minus_cos_theta, dot_pol_cross_mom_nrm, ss ); 
+    calc(wl, minus_cos_theta, dot_pol_cross_mom_nrm, ss, num_ss ); 
 }
 
+/**
+Stack::calc
+--------------
+
+1. loading stack layers "ll" from ss "stackspec"
+
+* minus_cos_theta < zero  : against normal : ordinary stack  : j = i 
+* minus_cos_theta >= zero : with normal    : backwards stack : j from end 
+
+NB stack flipping based on sign of minus_cos_theta ensures consistent layer ordering
+     
+* ll[0]   is always "top"     : start layer : incident
+* ll[N-1] is always "bottom"  : end   layer : transmitted
+    
+
+Usage for example from sysrap/SPMT.h SPMT::get_ARTE
+
+* HMM: for mct < 0.f (ingoing photons with efficiency potential) 
+  are calling twice, first with (mct,dpcmn) (-1.f,0.f) and then actual (mct,dpcmn) 
+
+  * maybe could skip the stack layer loading on second call ? 
+  * Benefit probably so small that overheads would swamp them. 
+
+**/
+
+
 template<typename F, int N>
-void LAYR_METHOD Stack<F,N>::calc(F wl, F minus_cos_theta, F dot_pol_cross_mom_nrm, const StackSpec<F,N>& ss )
+void LAYR_METHOD Stack<F,N>::calc(F wl, F minus_cos_theta, F dot_pol_cross_mom_nrm, const F* ss, unsigned num_ss )
 {
 #ifdef WITH_THRUST
     using thrust::complex ; 
@@ -691,6 +565,7 @@ void LAYR_METHOD Stack<F,N>::calc(F wl, F minus_cos_theta, F dot_pol_cross_mom_n
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
     assert( N >= 2); 
+    assert( num_ss == N*4 ); 
 #endif
 
     const F zero(Const::zero<F>()) ; 
@@ -701,19 +576,11 @@ void LAYR_METHOD Stack<F,N>::calc(F wl, F minus_cos_theta, F dot_pol_cross_mom_n
     for(int i=0 ; i < N ; i++)
     {
         int j = minus_cos_theta < zero ? i : N - 1 - i ;  
-        //  minus_cos_theta < zero  : against normal : ordinary stack  : j = i 
-        //  minus_cos_theta >= zero : with normal    : backwards stack : j from end 
 
-        ll[j].n.real(ss.ls[i].nr) ; 
-        ll[j].n.imag(ss.ls[i].ni) ; 
-        ll[j].d = ss.ls[i].d ; 
+        ll[j].n.real(ss[i*4+0]) ; 
+        ll[j].n.imag(ss[i*4+1]) ; 
+        ll[j].d = ss[i*4+2] ;  
     }
-
-    // NB stack flipping based on sign of minus_cos_theta ensures consistent layer ordering
-    // 
-    // ll[0]   is always "top"     : start layer : incident
-    // ll[N-1] is always "bottom"  : end   layer : transmitted
-    //
 
     art.wl = wl ; 
     art.mct = minus_cos_theta ; 
@@ -731,10 +598,10 @@ void LAYR_METHOD Stack<F,N>::calc(F wl, F minus_cos_theta, F dot_pol_cross_mom_n
     //  without flip, the ART values are non-physical : always outside 0->1 for mct > 0 angle > 90  
     //
 
-    const F stst = one - minus_cos_theta*minus_cos_theta ; 
-    l0.st.real(sqrt(stst)) ;  
+    const complex<F> stst = zOne - mct*mct ; 
+    l0.st = sqrt(stst) ; 
 
-    const F E_s2 = stst > zero ? (dot_pol_cross_mom_nrm*dot_pol_cross_mom_nrm)/stst : zero ;
+    const F E_s2 = norm(stst) > zero ? (dot_pol_cross_mom_nrm*dot_pol_cross_mom_nrm)/norm(stst) : zero ;
     // E_s2 is the S_polarization vs P_polarization power fraction  
     // E_s2 matches E1_perp*E1_perp see sysrap/tests/stmm_vs_sboundary_test.cc 
 
@@ -749,10 +616,11 @@ void LAYR_METHOD Stack<F,N>::calc(F wl, F minus_cos_theta, F dot_pol_cross_mom_n
     // Fresnel : set rs/rp/ts/tp for N-1 interfaces between N layers
     // (depending on indices(hence wl) and layer ct) 
     // HMM: last layer unset, perhaps zero it ?
+    // cf OpticalSystem::Calculate_rt  
+    // https://en.wikipedia.org/wiki/Fresnel_equations
+
     for(int idx=0 ; idx < N-1 ; idx++)
     {
-        // cf OpticalSystem::Calculate_rt  
-        // https://en.wikipedia.org/wiki/Fresnel_equations
         Layr<F>& i = ll[idx] ; 
         const Layr<F>& j = ll[idx+1] ;  
 
@@ -762,39 +630,23 @@ void LAYR_METHOD Stack<F,N>::calc(F wl, F minus_cos_theta, F dot_pol_cross_mom_n
         i.tp = (two*i.n*i.ct)/(j.n*i.ct + i.n*j.ct) ;       // t_p eoe[8]
     }
 
-    // populate transfer matrices for both thick and thin layers  
-    // for N=2 only one interface
 
-    ll[0].reset();    // ll[0].S ll[0].P matrices set to identity 
+    /**
+    Populate Layer S,P transfer matrices, by looping over consequtive layer pairs (i,j)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    for(int idx=1 ; idx < N ; idx++)
-    {
-        const Layr<F>& i = ll[idx-1] ;            
-        Layr<F>& j       = ll[idx] ;          
-        // looking at (i,j) pairs of layers 
+    Note that for N=2 there is only one interface, for N=4 there are 3 interfaces. 
 
-        complex<F> tmp_s = one/i.ts ; 
-        complex<F> tmp_p = one/i.tp ;   
-        // at glancing incidence ts, tp approach zero : blowing up tmp_s tmp_p
-        // which causes the S and P matrices to blow up yielding infinities at mct zero
-        //
-        // thick layers indicated with d = 0. 
-        // thin layers have thickness presumably comparable to art.wl (WITH SAME LENGTH UNIT: nm)
-        complex<F> delta         = j.d == zero ? zero : twopi_*j.n*j.d*j.ct/art.wl ; 
-        complex<F> exp_neg_delta = j.d == zero ? one  : exp(-zI*delta) ; 
-        complex<F> exp_pos_delta = j.d == zero ? one  : exp( zI*delta) ; 
+    At glancing incidence ts, tp approach zero : blowing up tmp_s tmp_p
+    which causes the S and P matrices to blow up yielding infinities at mct zero
+    
+    * thick layers indicated with d = 0. 
+    * thin layers have thickness presumably comparable to art.wl (WITH SAME LENGTH UNIT: nm)
 
-        j.S.M00 = tmp_s*exp_neg_delta      ; j.S.M01 = tmp_s*i.rs*exp_pos_delta ; 
-        j.S.M10 = tmp_s*i.rs*exp_neg_delta ; j.S.M11 =      tmp_s*exp_pos_delta ; 
+    Note that these are the TMM transfer matrices that combine the 
+    interfaces and propagation between them : exp_neg_delta, exp_pos_delta).  
 
-        j.P.M00 = tmp_p*exp_neg_delta      ; j.P.M01 = tmp_p*i.rp*exp_pos_delta ; 
-        j.P.M10 = tmp_p*i.rp*exp_neg_delta ; j.P.M11 =      tmp_p*exp_pos_delta ; 
-
-        // NB: for thin layers the transfer matrices combine interface and propagation between them 
-    }
-
-    /*
-    For d=0 (thick layer) 
+    For d=0 (thick layer) the exponents collape to one giving:
 
 
     S     |  1/ts    rs/ts |    
@@ -806,9 +658,38 @@ void LAYR_METHOD Stack<F,N>::calc(F wl, F minus_cos_theta, F dot_pol_cross_mom_n
           |                |
           |  rp/tp   1/tp  |     
 
-    */
+    **/
+
+    ll[0].reset();    // ll[0].S ll[0].P matrices set to identity 
+
+    for(int idx=1 ; idx < N ; idx++)
+    {
+        const Layr<F>& i = ll[idx-1] ;            
+        Layr<F>& j       = ll[idx] ;          
+
+        complex<F> tmp_s = one/i.ts ; 
+        complex<F> tmp_p = one/i.tp ;   
+
+        complex<F> delta         = j.d == zero ? zero : twopi_*j.n*j.d*j.ct/art.wl ; 
+        complex<F> exp_neg_delta = j.d == zero ? one  : exp(-zI*delta) ; 
+        complex<F> exp_pos_delta = j.d == zero ? one  : exp( zI*delta) ; 
+
+        j.S.M00 = tmp_s*exp_neg_delta      ; j.S.M01 = tmp_s*i.rs*exp_pos_delta ; 
+        j.S.M10 = tmp_s*i.rs*exp_neg_delta ; j.S.M11 =      tmp_s*exp_pos_delta ; 
+
+        j.P.M00 = tmp_p*exp_neg_delta      ; j.P.M01 = tmp_p*i.rp*exp_pos_delta ; 
+        j.P.M10 = tmp_p*i.rp*exp_neg_delta ; j.P.M11 =      tmp_p*exp_pos_delta ; 
+
+    }
 
 
+    /**
+    Compute composite "effective" layer
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    By product of the transfer matrices, then fishing out the parts. 
+
+    **/
 
     // product of the transfer matrices
     comp.d = zero ; 
@@ -848,25 +729,30 @@ void LAYR_METHOD Stack<F,N>::calc(F wl, F minus_cos_theta, F dot_pol_cross_mom_n
     art.R_p = norm(comp.rp) ; 
     art.T_s = _T_s.real() ; 
     art.T_p = _T_p.real() ; 
-
-    // absorption factor by subtracting reflection and transmission
-    art.A_s = one-art.R_s-art.T_s;
+    art.A_s = one-art.R_s-art.T_s;  // absorption by subtracting reflection and transmission from one
     art.A_p = one-art.R_p-art.T_p;
 
-    // average of S and P 
+    const F& SF = E_s2 ;  // combine (_s,_p) appropriate for (minus_cos_theta, dot_pol_cross_mom_nrm )
+    art.A = SF*art.A_s + (one-SF)*art.A_p ; 
+    art.R = SF*art.R_s + (one-SF)*art.R_p ; 
+    art.T = SF*art.T_s + (one-SF)*art.T_p ;  
+    // an earlier incarnation of art.T matched with Geant4 TransCoeff see sysrap/tests/stmm_vs_sboundary_test.cc
+    art.SF = SF ;
+
     art.A_av   = (art.A_s+art.A_p)/two ;
     art.R_av   = (art.R_s+art.R_p)/two ;
     art.T_av   = (art.T_s+art.T_p)/two ;
-    art.A_R_T_av = art.A_av + art.R_av + art.T_av ;  
+    art.ART_av = art.A_av + art.R_av + art.T_av ;  
 
-    const F& S_frac = E_s2 ;
-    const F P_frac = one - S_frac ;  
+    /**
+    HMM : the _av are pointless, only used for normal incidence.
+    At normal incidence S/P distinction is meaningless, causing::
 
-    // combination of S and P appropriate for (minus_cos_theta, dot_pol_cross_mom_nrm )
-    art.A = S_frac*art.A_s + P_frac*art.A_p ; 
-    art.R = S_frac*art.R_s + P_frac*art.R_p ; 
-    art.T = S_frac*art.T_s + P_frac*art.T_p ;  
-    art.S = S_frac ;
+        A_s == A_p == A_av == A  
+        R_s == R_p == R_av == R  
+        T_s == T_p == T_av == T  
+    **/
+
 }
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
