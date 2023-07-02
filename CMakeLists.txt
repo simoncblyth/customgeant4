@@ -9,6 +9,9 @@ Opticks CMake machinery
 Following primitive non-target based CMake approach for consistency with junosw
 Potential for troubles when used with Opticks target based CMake.  
 
+NB for checking the CMake versioning machinery see 
+
+* opticks/examples/UseCustom4/go.sh 
 
 #]=]
 
@@ -16,10 +19,10 @@ Potential for troubles when used with Opticks target based CMake.
 set(name Custom4)
 project(${name})
 set(${PROJECT_NAME}_VERSION_MAJOR 0) 
-set(${PROJECT_NAME}_VERSION_MINOR 1)  
-set(${PROJECT_NAME}_VERSION_PATCH 4)  
+set(${PROJECT_NAME}_VERSION_MINOR 1)        # MAX 99
+set(${PROJECT_NAME}_VERSION_PATCH 5)        # MAX 99
+set(${PROJECT_NAME}_VERSION_NUMBER 00105)   # MAX WITH MAJOR IS 09999 : HOW TO DERIVE THIS 
 set(${PROJECT_NAME}_VERSION "${${PROJECT_NAME}_VERSION_MAJOR}.${${PROJECT_NAME}_VERSION_MINOR}.${${PROJECT_NAME}_VERSION_PATCH}")
-
 
 
 include(GNUInstallDirs)
@@ -192,7 +195,12 @@ configure_file(
 install(FILES
   ${PROJECT_BINARY_DIR}/Custom4Config.cmake
   ${PROJECT_BINARY_DIR}/Custom4ConfigVersion.cmake
-  ${PROJECT_BINARY_DIR}/C4Version.h
   DESTINATION ${CUSTOM4_CMAKE_DIR}
   )
+
+install(FILES
+  ${PROJECT_BINARY_DIR}/C4Version.h
+  DESTINATION ${CUSTOM4_RELATIVE_INCDIR}
+  )
+
 

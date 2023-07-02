@@ -71,4 +71,10 @@ References to Opticks and other related packages
 * https://simoncblyth.github.io/
 
 
+How to update the Custom4 version used by junosw
+--------------------------------------------------
+
+See notes in $JUNOTOP/junoenv/packages/custom4.sh 
+
+
 
