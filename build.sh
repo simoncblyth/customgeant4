@@ -59,10 +59,11 @@ with default prefix value incorporating the version::
     /usr/local/opticks_externals/custom4/0.1.5
 
 This behaviour can be mimicked with prior versions of this
-build.sh such as 0.1.4 by manually overriding OPTICKS_PREFIX
-with the appropriate versioned directory::
+build.sh such as 0.1.4 by manually editing build.sh to 
+use CUSTOM4_PREFIX rather than OPTICKS_PREFIX and 
+setting that as shown below to the  appropriate versioned directory::
 
-    OPTICKS_PREFIX=/usr/local/opticks_externals/custom4/0.1.4 ./build.sh 
+    CUSTOM4_PREFIX=/usr/local/opticks_externals/custom4/0.1.4 ./build.sh 
 
 
 EOU
