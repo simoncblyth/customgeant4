@@ -600,10 +600,28 @@ void LAYR_METHOD Stack<F,N>::calc(F wl, F minus_cos_theta, F dot_pol_cross_mom_n
 
     const complex<F> stst = zOne - mct*mct ; 
     l0.st = sqrt(stst) ; 
+      
+    /*
+    BUG FIX July 2023: 
+        using norm(stst) to give sin_theta*sin_theta is incorrect
+        because stst is already squared and the norm squares it again 
+        Found that bug, because it led to SF of 2. which is nonsensical (SF must be from 0. to 1. ) 
+        and also gave a polarization specific A of greater than 1. 
+        Test that revealed the bug : qudarap/tests/QSim_MockTest.sh
+          
+    BUG: const F E_s2 = norm(stst)   > zero ? (dot_pol_cross_mom_nrm*dot_pol_cross_mom_nrm)/norm(stst) : zero ;
+    OK : const F E_s2 = l0.st.real() > zero ? (dot_pol_cross_mom_nrm*dot_pol_cross_mom_nrm)/(l0.st.real()*l0.st.real()) : zero ;
+    */
+    const F E_s2 = stst.real() > zero ? (dot_pol_cross_mom_nrm*dot_pol_cross_mom_nrm)/stst.real() : zero ;
 
-    const F E_s2 = norm(stst) > zero ? (dot_pol_cross_mom_nrm*dot_pol_cross_mom_nrm)/norm(stst) : zero ;
     // E_s2 is the S_polarization vs P_polarization power fraction  
     // E_s2 matches E1_perp*E1_perp see sysrap/tests/stmm_vs_sboundary_test.cc 
+
+#ifdef MOCK_CURAND_DEBUG
+    printf("//stack.calc dot_pol_cross_mom_nrm %7.3f norm(stst) %7.3f l0.st (%7.3f,%7.3f) E_s2 %7.3f \n", 
+            dot_pol_cross_mom_nrm, norm(stst), l0.st.real(), l0.st.imag(), E_s2 ); 
+#endif
+
 
 
     for(int idx=1 ; idx < N ; idx++)  // for N=2 idx only 1, sets only ll[1] 
@@ -738,6 +756,10 @@ void LAYR_METHOD Stack<F,N>::calc(F wl, F minus_cos_theta, F dot_pol_cross_mom_n
     art.T = SF*art.T_s + (one-SF)*art.T_p ;  
     // an earlier incarnation of art.T matched with Geant4 TransCoeff see sysrap/tests/stmm_vs_sboundary_test.cc
     art.SF = SF ;
+
+#ifdef MOCK_CURAND_DEBUG
+    printf("//Stack::calc SF %7.3f \n", art.SF ); 
+#endif
 
     art.A_av   = (art.A_s+art.A_p)/two ;
     art.R_av   = (art.R_s+art.R_p)/two ;
