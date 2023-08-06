@@ -7,7 +7,14 @@ Workflow:
 
 1. following C4 developments worthy of tagging, 
    get changes committed and pushed. Ensure that the 
-   CMakeLists.txt VERSION is bumped compared to the prior tag. 
+   CMakeLists.txt VERSION is bumped compared to the prior tag, 
+   ie it should be incremented from the last listed by "git tag"::
+
+        epsilon:customgeant4 blyth$ git tag 
+        ...
+        v0.1.4
+        v0.1.5
+
 
 2. run addtag.sh checking VERSION and VERSION_NUMBER are consistent
 
