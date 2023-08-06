@@ -510,6 +510,7 @@ C4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
                 {
                     m_custom_status = 'Y' ;
 
+                    m_custom_art->dump = m_track_dump ; 
                     m_custom_art->doIt(aTrack, aStep) ;  
          
                     /**

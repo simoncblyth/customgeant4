@@ -18,17 +18,6 @@ It does however require CMAKE_PREFIX_PATH envvar to find Geant4,CLHEP eg::
 
 
 
-Versioning in 0.1.4 and prior
-----------------------------------
-
-Versioning was only fully setup in 0.1.5 thus to use versioning 
-before that requires some manual kludging. 
-For example adding a minimal C4Version.h into the appropriate include dir,
-will allow macro version branching to work::
-
-    echo "#define Custom4_VERSION_NUMBER 00104" > /usr/local/opticks_externals/custom4/0.1.4/lib/Custom4-0.1.4/C4Version.h
-
-
 Temporarily return to a tagged version
 -----------------------------------------
 
@@ -44,10 +33,10 @@ Temporarily return to a tagged version
 
 
 
-CMAKE_INSTALL_PREFIX 
----------------------
-
-Previous versions of this script used the dirty approach of installing 
+CMAKE_INSTALL_PREFIX
+----------------------
+ 
+Before release 0.1.5 this build script used the dirty approach of installing 
 into the OPTICKS_PREFIX dir, eg /usr/local/opticks, making it 
 difficult to work with multiple versions of Custom4. 
 

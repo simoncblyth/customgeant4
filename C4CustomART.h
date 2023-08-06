@@ -81,6 +81,7 @@ Do you agree with this argument ?
 
 struct C4CustomART
 {
+    bool   dump ; 
     int    count ; 
     double zlocal ; 
 #ifdef C4_DEBUG
@@ -135,6 +136,7 @@ inline C4CustomART::C4CustomART(
     const G4double&      thePhotonMomentum_
     )
     :
+    dump(false),
     count(0),
     zlocal(-1.),
 #ifdef C4_DEBUG
@@ -320,7 +322,7 @@ inline void C4CustomART::doIt(const G4Track& aTrack, const G4Step& )
 
         bool expect = theEfficiency <= 1. ; 
         if(!expect) std::cerr
-            << "CustomART::doIt"
+            << "C4CustomART::doIt"
             << " FATAL "
             << " ERR: theEfficiency > 1. : " << theEfficiency
             << " _qe " << _qe
@@ -334,6 +336,21 @@ inline void C4CustomART::doIt(const G4Track& aTrack, const G4Step& )
     const double& A = stack.art.A ; 
     const double& R = stack.art.R ; 
     const double& T = stack.art.T ; 
+
+    if(dump) std::cerr   
+        << "C4CustomART::doIt"
+        << " pmtid " << pmtid 
+        << " _qe " << _qe 
+        << std::endl 
+        << " stack " 
+        << std::endl 
+        << stack 
+        << std::endl 
+        ;
+ 
+
+  
+
 
     theAbsorption = A ; 
     theReflectivity  = R/(1.-A) ; 
