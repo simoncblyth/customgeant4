@@ -69,8 +69,14 @@ VERSION=${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}
 
 cat << EOC
 ## addtag.sh 
-## NB before piping the below commands to the shell bump the version in CMakeLists.txt and 
-## make sure to "git add" and "git push"  to avoid version inconsistency 
+##
+## NB before piping the below commands to the shell make the following checks:
+##
+## 1. "git status" : check all changes are committed and pushed
+## 2. "git tag" : ensure that the tag string extracted from the CMakeLists.txt is incremented
+##    from the last one listed by "git tag"
+## 
+##
 
 git tag -a v$VERSION -m "addtag.sh for VERSION $VERSION VERSION_NUMBER $VERSION_NUMBER extracted from CMakeLists.txt  "
 git push --tags
