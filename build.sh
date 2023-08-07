@@ -55,6 +55,54 @@ setting that as shown below to the  appropriate versioned directory::
     CUSTOM4_PREFIX=/usr/local/opticks_externals/custom4/0.1.4 ./build.sh 
 
 
+
+Opticks Clean build to pickup new Custom4
+-------------------------------------------
+
+Alternatively do a fully clean build of everything::
+  
+    o
+    om-
+    om-clean
+    om-conf
+    oo
+
+
+JUNOSW clean build to pickup new Custom4
+-------------------------------------------
+
+And clean build junosw::
+
+   jo
+   cd build
+   make clean
+   cd ..
+   ./build_Debug.sh 
+
+
+HUH: Sometimes need nuclear option, to get rid of old library refs in CMake files::
+
+   jo
+   rm -rf build
+   ./build_Debug.sh 
+
+
+Location of reference installs on laptop
+-------------------------------------------
+
+::
+
+    /usr/local/opticks_externals/custom4/0.1.6/include/Custom4
+
+Workstation install dirs
+-------------------------
+
+::
+
+    /data/blyth/junotop/ExternalLibs/custom4/0.1.6
+
+
+
 EOU
 }
 

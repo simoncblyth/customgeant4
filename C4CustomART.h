@@ -337,24 +337,28 @@ inline void C4CustomART::doIt(const G4Track& aTrack, const G4Step& )
     const double& R = stack.art.R ; 
     const double& T = stack.art.T ; 
 
+    theAbsorption = A ; 
+    theReflectivity  = R/(1.-A) ; 
+    theTransmittance = T/(1.-A)  ;   
+
     if(dump) std::cerr   
         << "C4CustomART::doIt"
-        << " pmtid " << pmtid 
-        << " _qe " << _qe 
+        << std::endl 
+        << " pmtid " << pmtid << std::endl 
+        << " _qe                      : " << std::fixed << std::setw(10) << std::setprecision(4) << _qe  << std::endl 
+        << " minus_cos_theta          : " << std::fixed << std::setw(10) << std::setprecision(4) << minus_cos_theta  << std::endl 
+        << " dot_pol_cross_mom_nrm    : " << std::fixed << std::setw(10) << std::setprecision(4) << dot_pol_cross_mom_nrm  << std::endl 
         << std::endl 
         << " stack " 
         << std::endl 
         << stack 
         << std::endl 
+        << " theAbsorption    : " << std::fixed << std::setw(10) << std::setprecision(4) << theAbsorption  << std::endl 
+        << " theReflectivity  : " << std::fixed << std::setw(10) << std::setprecision(4) << theReflectivity  << std::endl 
+        << " theTransmittance : " << std::fixed << std::setw(10) << std::setprecision(4) << theTransmittance  << std::endl 
+        << " theEfficiency    : " << std::fixed << std::setw(10) << std::setprecision(4) << theEfficiency  << std::endl 
         ;
- 
 
-  
-
-
-    theAbsorption = A ; 
-    theReflectivity  = R/(1.-A) ; 
-    theTransmittance = T/(1.-A)  ;   
 
 #ifdef C4_DEBUG
     dbg.A = A ; 

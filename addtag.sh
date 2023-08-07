@@ -42,20 +42,29 @@ Workflow:
         ## this downloads and installs the tagged tarball from github 
 
 When the Great Firewall prevents download the typical thing that happens is get a 
-zero sized tarball. So delete that and from remote scp in the tarball.
-   
+hang for several minutes and a zero sized tarball. 
+So delete that and from remote scp in the tarball.::
+
     curl -L -O https://github.com/simoncblyth/customgeant4/archive/refs/tags/v0.1.5.tar.gz
     scp v0.1.5.tar.gz P:/data/blyth/junotop/ExternalLibs/Build/
 
+Can now use util.sh to do that after changing the tag in the script::
+
+    ./util.sh info
+    ./util.sh get
+    ./util.sh scp
+
 Then can rerun, which skips download as tarball already present::
 
-        bash junoenv libs all custom4 
+    bash junoenv libs all custom4 
 
 To pickup that version then::
 
-        jt ; vi bashrc.sh   ## edit the custom4 source line version 
+    jt ; vi bashrc.sh   ## edit the custom4 source line version 
 
+To check Opticks is picking up the updated Custom4 use::
 
+    ~/opticks/examples/UseCustom4/go.sh 
 
 EOU
 }

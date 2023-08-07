@@ -645,7 +645,11 @@ C4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
                    DoAbsorption();
                 } else {
 
-                   if(m_track_dump) std::cerr << " FALL THRU TRANSMISSION " << std::endl ; 
+                   if(m_track_dump) std::cerr 
+                       << "C4OpBoundaryProcess::PostStepDoIt"
+                       << " FALL THRU TRANSMISSION " 
+                       << std::endl
+                       ; 
 
                    theStatus = Transmission;
                    NewMomentum = OldMomentum;
@@ -1205,6 +1209,13 @@ void C4OpBoundaryProcess::DielectricDichroic()
 
 void C4OpBoundaryProcess::DielectricDielectric()
 {
+        if(m_track_dump) std::cerr 
+            << "C4OpBoundaryProcess::DielectricDielectric"
+            << " Rindex1 " << std::setw(10) << std::fixed << std::setprecision(8) << Rindex1 
+            << " Rindex2 " << std::setw(10) << std::fixed << std::setprecision(8) << Rindex2 
+            << std::endl
+             ; 
+
         G4bool Inside = false;
         G4bool Swap = false;
 

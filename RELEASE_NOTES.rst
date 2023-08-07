@@ -2,6 +2,11 @@ Custom4 Release Notes
 ========================
 
 
+0.1.7 (not yet tagged)
+-----------------------
+
+* util.sh script for tarball curl and scp to workstation 
+
 0.1.6
 -------
 
