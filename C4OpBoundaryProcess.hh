@@ -253,7 +253,9 @@ public:
         char           m_custom_status ; 
         C4CustomART*   m_custom_art ;  
         C4Pho*         m_track_label ; 
+#ifdef C4_DEBUG_PIDX
         bool           m_track_dump ; 
+#endif
 
 };
 

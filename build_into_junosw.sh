@@ -56,7 +56,7 @@ Updating Custom4 workflow
 2. workstation: "c4 ; ./build_into_junosw.sh" build and install Custom4 into /data/blyth/junotop/ExternalLibs/custom4/VERSION
 3. workstation: update build opticks, "o ; oo" 
 
-Note that because the Custom4 install directories staying the same, 
+Note that because the Custom4 install directory stays the same
 there is no need for clean building. This makes it fast to update Custom4. 
 
 EOU

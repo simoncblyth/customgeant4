@@ -103,6 +103,19 @@ target_include_directories( ${name} PUBLIC
 )
 target_link_libraries(      ${name} PUBLIC ${Geant4_LIBRARIES})
 
+
+message(STATUS "Custom4.CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE} ")
+
+if (${CMAKE_BUILD_TYPE} MATCHES "Debug")
+    message(STATUS "Custom4.CMAKE_BUILD_TYPE.Debug.ENABLE C4_DEBUG_PIDX ")
+    target_compile_definitions( ${name} PUBLIC C4_DEBUG_PIDX )
+else()
+    message(STATUS "Custom4.CMAKE_BUILD_TYPE.Debug.NOT")
+endif() 
+
+
+
+
 set(CUSTOM4_RELATIVE_LIBDIR  ${CMAKE_INSTALL_LIBDIR})
 set(CUSTOM4_RELATIVE_INCDIR  ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME})
 

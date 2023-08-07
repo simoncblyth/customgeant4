@@ -200,7 +200,9 @@ G4VParticleChange*
 C4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 {
         m_track_label = C4TrackInfo<C4Pho>::GetRef(&aTrack);
+#ifdef C4_DEBUG_PIDX
         m_track_dump = ( m_track_label != nullptr && m_track_label->id == PIDX && PIDX_ENABLED ) || PIDX == -2  ; 
+#endif
 
         theStatus = Undefined;
         m_custom_status = 'U' ;
@@ -510,7 +512,9 @@ C4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
                 {
                     m_custom_status = 'Y' ;
 
+#ifdef C4_DEBUG_PIDX
                     m_custom_art->dump = m_track_dump ; 
+#endif
                     m_custom_art->doIt(aTrack, aStep) ;  
          
                     /**
@@ -550,13 +554,14 @@ C4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
                 m_custom_status = 'X' ;
             }
 
+#ifdef C4_DEBUG_PIDX
             if(m_track_dump) std::cout 
                 << "C4OpBoundaryProcess::PostStepDoIt"
                 << " PIDX " << PIDX 
                 << " m_custom_status " << m_custom_status 
                 << std::endl 
                 ; 
-
+#endif
 
            }
            //]OpticalSurface.mpt
@@ -608,6 +613,19 @@ C4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
         else 
         {    
             DielectricDielectric();
+#ifdef C4_DEBUG_PIDX
+            if(m_track_dump) std::cerr
+                 << "C4OpBoundaryProcess::PostStepDoIt.Y.DiDi"
+                 << " PIDX " << PIDX 
+                 << " mom [" 
+                 << std::fixed << std::setw(10) << std::setprecision(8) << NewMomentum.x() << ","
+                 << std::fixed << std::setw(10) << std::setprecision(8) << NewMomentum.y() << ","
+                 << std::fixed << std::setw(10) << std::setprecision(8) << NewMomentum.z() << "]"
+                 << std::endl 
+                 ;
+ 
+#endif
+
         }    
     }
 	else if (type == dielectric_metal) {
@@ -645,11 +663,13 @@ C4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
                    DoAbsorption();
                 } else {
 
+#ifdef C4_DEBUG_PIDX
                    if(m_track_dump) std::cerr 
                        << "C4OpBoundaryProcess::PostStepDoIt"
                        << " FALL THRU TRANSMISSION " 
                        << std::endl
                        ; 
+#endif
 
                    theStatus = Transmission;
                    NewMomentum = OldMomentum;
@@ -1209,12 +1229,14 @@ void C4OpBoundaryProcess::DielectricDichroic()
 
 void C4OpBoundaryProcess::DielectricDielectric()
 {
+#ifdef C4_DEBUG_PIDX
         if(m_track_dump) std::cerr 
             << "C4OpBoundaryProcess::DielectricDielectric"
             << " Rindex1 " << std::setw(10) << std::fixed << std::setprecision(8) << Rindex1 
             << " Rindex2 " << std::setw(10) << std::fixed << std::setprecision(8) << Rindex2 
             << std::endl
              ; 
+#endif
 
         G4bool Inside = false;
         G4bool Swap = false;

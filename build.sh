@@ -123,6 +123,9 @@ VERSION=${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}
 custom4_prefix=${OPTICKS_PREFIX}_externals/custom4/$VERSION
 CUSTOM4_PREFIX=${CUSTOM4_PREFIX:-$custom4_prefix}
 
+custom4_cmake_build_type=Release
+#custom4_cmake_build_type=Debug
+CUSTOM4_CMAKE_BUILD_TYPE=${CUSTOM4_CMAKE_BUILD_TYPE:-${custom4_cmake_build_type}}
 
 
 defarg="info_install"
@@ -144,7 +147,7 @@ if [ "${arg/install}" != "$arg" ]; then
     cd $bdir 
     pwd 
 
-    cmake $sdir -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=$CUSTOM4_PREFIX
+    cmake $sdir -DCMAKE_BUILD_TYPE=$CUSTOM4_CMAKE_BUILD_TYPE -DCMAKE_INSTALL_PREFIX=$CUSTOM4_PREFIX
     make
     make install   
 fi 

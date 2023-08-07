@@ -82,6 +82,7 @@ inline int C4Touchable::ReplicaDepth(const G4VTouchable* touch)   // static
 
         bool hierarchy = dpv->GetMotherLogical() == mlv ; 
         assert(hierarchy); 
+        if(!hierarchy) return -2 ; 
 
         const char* dlv_name = dlv->GetName().c_str() ; 
         if(HasMoreThanOneDaughterWithName(mlv, dlv_name)) return d ; 
