@@ -91,6 +91,8 @@ if [ "${arg/put}" != "$arg" ]; then
 fi 
 
 if [ "${arg/build}" != "$arg" ]; then
+    #export CUSTOM4_CMAKE_BUILD_TYPE=Release
+    export CUSTOM4_CMAKE_BUILD_TYPE=Debug
     $REALDIR/build.sh 
    [ $? -ne 0 ] && echo $BASH_SOURCE : build error && exit 2
 fi

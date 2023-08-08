@@ -538,11 +538,21 @@ Usage for example from sysrap/SPMT.h SPMT::get_ARTE
   * maybe could skip the stack layer loading on second call ? 
   * Benefit probably so small that overheads would swamp them. 
 
+
+assert does nothing when NDEBUG macro is defined, so use that to avoid warning
+--------------------------------------------------------------------------------
+
+* https://en.cppreference.com/w/cpp/error/assert
+
 **/
 
 
 template<typename F, int N>
+#ifdef NDEBUG
+void LAYR_METHOD Stack<F,N>::calc(F wl, F minus_cos_theta, F dot_pol_cross_mom_nrm, const F* ss, unsigned        )
+#else
 void LAYR_METHOD Stack<F,N>::calc(F wl, F minus_cos_theta, F dot_pol_cross_mom_nrm, const F* ss, unsigned num_ss )
+#endif
 {
 #ifdef WITH_THRUST
     using thrust::complex ; 
