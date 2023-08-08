@@ -612,17 +612,59 @@ C4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
         }    
         else 
         {    
-            DielectricDielectric();
+
 #ifdef C4_DEBUG_PIDX
             if(m_track_dump) std::cerr
-                 << "C4OpBoundaryProcess::PostStepDoIt.Y.DiDi"
-                 << " PIDX " << PIDX 
-                 << " mom [" 
-                 << std::fixed << std::setw(10) << std::setprecision(8) << NewMomentum.x() << ","
-                 << std::fixed << std::setw(10) << std::setprecision(8) << NewMomentum.y() << ","
-                 << std::fixed << std::setw(10) << std::setprecision(8) << NewMomentum.z() << "]"
-                 << std::endl 
-                 ;
+            << "#C4OpBoundaryProcess::PostStepDoIt.Y.DiDi.0"
+            << " PIDX " << PIDX 
+            << std::endl 
+            << "theGlobalPoint = np.array([" 
+            << std::fixed << std::setw(10) << std::setprecision(8) << theGlobalPoint.x() << ","
+            << std::fixed << std::setw(10) << std::setprecision(8) << theGlobalPoint.y() << ","
+            << std::fixed << std::setw(10) << std::setprecision(8) << theGlobalPoint.z() << "])"
+            << " ; l_theGlobalPoint = " << std::setw(10) << std::fixed << std::setprecision(8) << theGlobalPoint.r() 
+            << std::endl 
+            << "mom0 = np.array([" 
+            << std::fixed << std::setw(10) << std::setprecision(8) << OldMomentum.x() << ","
+            << std::fixed << std::setw(10) << std::setprecision(8) << OldMomentum.y() << ","
+            << std::fixed << std::setw(10) << std::setprecision(8) << OldMomentum.z() << "])"
+            << " ; l_OldMomentum = " << std::setw(10) << std::fixed << std::setprecision(8) << OldMomentum.r() 
+            << std::endl 
+            << "pol0 = np.array([" 
+            << std::fixed << std::setw(10) << std::setprecision(8) << OldPolarization.x() << ","
+            << std::fixed << std::setw(10) << std::setprecision(8) << OldPolarization.y() << ","
+            << std::fixed << std::setw(10) << std::setprecision(8) << OldPolarization.z() << "])"
+            << " ; l_OldPolarization = " << std::setw(10) << std::fixed << std::setprecision(8) << OldPolarization.r() 
+            << std::endl 
+            ;
+#endif
+
+            DielectricDielectric();
+
+#ifdef C4_DEBUG_PIDX
+            if(m_track_dump) std::cerr
+            << "#C4OpBoundaryProcess::PostStepDoIt.Y.DiDi.1"
+            << " PIDX " << PIDX 
+            << std::endl 
+            << "mom1 = np.array([" 
+            << std::fixed << std::setw(10) << std::setprecision(8) << NewMomentum.x() << ","
+            << std::fixed << std::setw(10) << std::setprecision(8) << NewMomentum.y() << ","
+            << std::fixed << std::setw(10) << std::setprecision(8) << NewMomentum.z() << "])"
+            << " ; l_NewMomentum = " << std::setw(10) << std::fixed << std::setprecision(8) << NewMomentum.r() 
+            << std::endl 
+            << "pol1 = np.array([" 
+            << std::fixed << std::setw(10) << std::setprecision(8) << NewPolarization.x() << ","
+            << std::fixed << std::setw(10) << std::setprecision(8) << NewPolarization.y() << ","
+            << std::fixed << std::setw(10) << std::setprecision(8) << NewPolarization.z() << "])"
+            << " ; l_NewPolarization = " << std::setw(10) << std::fixed << std::setprecision(8) << NewPolarization.r() 
+            << std::endl 
+            << "nrm = np.array([" 
+            << std::fixed << std::setw(10) << std::setprecision(8) << theRecoveredNormal.x() << ","
+            << std::fixed << std::setw(10) << std::setprecision(8) << theRecoveredNormal.y() << ","
+            << std::fixed << std::setw(10) << std::setprecision(8) << theRecoveredNormal.z() << "])"
+            << " ; l_theRecoveredNormal = " << std::setw(10) << std::fixed << std::setprecision(8) << theRecoveredNormal.r() 
+            << std::endl 
+            ;
  
 #endif
 
@@ -1231,7 +1273,7 @@ void C4OpBoundaryProcess::DielectricDielectric()
 {
 #ifdef C4_DEBUG_PIDX
         if(m_track_dump) std::cerr 
-            << "C4OpBoundaryProcess::DielectricDielectric"
+            << "#C4OpBoundaryProcess::DielectricDielectric"
             << " Rindex1 " << std::setw(10) << std::fixed << std::setprecision(8) << Rindex1 
             << " Rindex2 " << std::setw(10) << std::fixed << std::setprecision(8) << Rindex2 
             << std::endl
@@ -1280,6 +1322,54 @@ void C4OpBoundaryProcess::DielectricDielectric()
               theFacetNormal =
                              GetFacetNormal(OldMomentum,theGlobalNormal);
            }
+
+
+#ifdef C4_DEBUG_PIDX
+           if(m_track_dump) std::cerr 
+           << "#C4OpBoundaryProcess::DielectricDielectric.do"
+           << " polished " << ( theFinish == polished ? "YES" : "NO " )
+           << std::endl  
+           << "theGlobalPoint = np.array([" 
+           << std::setw(10) << std::fixed << std::setprecision(8) << theGlobalPoint.x() << ","
+           << std::setw(10) << std::fixed << std::setprecision(8) << theGlobalPoint.y() << ","
+           << std::setw(10) << std::fixed << std::setprecision(8) << theGlobalPoint.z() << "])"
+           << " ; l_theGlobalPoint = " << std::setw(10) << std::fixed << std::setprecision(8) << theGlobalPoint.r() 
+           << std::endl  
+           << "theGlobalNormal = np.array([" 
+           << std::setw(10) << std::fixed << std::setprecision(8) << theGlobalNormal.x() << ","
+           << std::setw(10) << std::fixed << std::setprecision(8) << theGlobalNormal.y() << ","
+           << std::setw(10) << std::fixed << std::setprecision(8) << theGlobalNormal.z() << "])"
+           << " ; l_theGlobalNormal = " << std::setw(10) << std::fixed << std::setprecision(8) << theGlobalNormal.r() 
+           << std::endl  
+           << "theFacetNormal = np.array([" 
+           << std::setw(10) << std::fixed << std::setprecision(8) << theFacetNormal.x() << ","
+           << std::setw(10) << std::fixed << std::setprecision(8) << theFacetNormal.y() << ","
+           << std::setw(10) << std::fixed << std::setprecision(8) << theFacetNormal.z() << "])"
+           << " ; l_theFacetNormal = " << std::setw(10) << std::fixed << std::setprecision(8) << theFacetNormal.r() 
+           << std::endl 
+           << "theRecoveredNormal = np.array([" 
+           << std::setw(10) << std::fixed << std::setprecision(8) << theRecoveredNormal.x() << ","
+           << std::setw(10) << std::fixed << std::setprecision(8) << theRecoveredNormal.y() << ","
+           << std::setw(10) << std::fixed << std::setprecision(8) << theRecoveredNormal.z() << "])"
+           << " ; l_theRecoveredNormal = " << std::setw(10) << std::fixed << std::setprecision(8) << theRecoveredNormal.r() 
+           << std::endl 
+           << "OldMomentum = np.array([" 
+           << std::setw(10) << std::fixed << std::setprecision(8) << OldMomentum.x() << ","
+           << std::setw(10) << std::fixed << std::setprecision(8) << OldMomentum.y() << ","
+           << std::setw(10) << std::fixed << std::setprecision(8) << OldMomentum.z() << "])"
+           << " ; l_OldMomentum = " << std::setw(10) << std::fixed << std::setprecision(8) << OldMomentum.r() 
+           << std::endl  
+           << "OldPolarization = np.array([" 
+           << std::setw(10) << std::fixed << std::setprecision(8) << OldPolarization.x() << ","
+           << std::setw(10) << std::fixed << std::setprecision(8) << OldPolarization.y() << ","
+           << std::setw(10) << std::fixed << std::setprecision(8) << OldPolarization.z() << "])"
+           << " ; l_OldPolarization = " << std::setw(10) << std::fixed << std::setprecision(8) << OldPolarization.r() 
+           << std::endl  
+           ; 
+#endif
+
+
+
 
            PdotN = OldMomentum * theFacetNormal;
            EdotN = OldPolarization * theFacetNormal;
@@ -1428,6 +1518,30 @@ void C4OpBoundaryProcess::DielectricDielectric()
                    alpha = cost1 - cost2*(Rindex2/Rindex1);
                    NewMomentum = OldMomentum + alpha*theFacetNormal;
                    NewMomentum = NewMomentum.unit();
+
+#ifdef C4_DEBUG_PIDX
+                   if(m_track_dump) std::cerr 
+                   << "#C4OpBoundaryProcess::DielectricDielectric.incident_ray_oblique.FresnelRefraction"
+                   << std::endl  
+                   << "NewMomentum0 = np.array([" 
+                   << std::setw(10) << std::fixed << std::setprecision(8) << NewMomentum.x() << ","
+                   << std::setw(10) << std::fixed << std::setprecision(8) << NewMomentum.y() << ","
+                   << std::setw(10) << std::fixed << std::setprecision(8) << NewMomentum.z() << "])"
+                   << " ; l_NewMomentum0 = " << std::setw(10) << std::fixed << std::setprecision(8) << NewMomentum.r() 
+                   << std::endl  
+                   << "#C4OpBoundaryProcess::DielectricDielectric.incident_ray_oblique"
+                   << " ; sint1 = " << std::setw(10) << std::fixed << std::setprecision(8) << sint1
+                   << " ; cost1 = " << std::setw(10) << std::fixed << std::setprecision(8) << cost1 
+                   << " ; cost2 = " << std::setw(10) << std::fixed << std::setprecision(8) << cost2
+                   << " ; Rindex2 = " << std::setw(10) << std::fixed << std::setprecision(8) << Rindex2
+                   << " ; Rindex1 = " << std::setw(10) << std::fixed << std::setprecision(8) << Rindex1
+                   << " ; alpha = " << std::setw(10) << std::fixed << std::setprecision(8) << alpha
+                   << std::endl  
+                   ;
+#endif
+
+
+
 //                   PdotN = -cost2;
                    A_paral = NewMomentum.cross(A_trans);
                    A_paral = A_paral.unit();
