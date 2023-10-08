@@ -30,7 +30,10 @@ Workflow:
    such that subsequent installs go into the future versioned directory, 
    previewing the next version
  
-6. on laptop edit .opticks_config to pick up the desired version, 
+6. on laptop edit ~/.opticks_config to pick the Custom4 version used by Opticks, eg::
+
+       opticks-prepend-prefix /usr/local/opticks_externals/custom4/0.1.7 ## next tag    
+
    which will usually be the next version. 
    But sometimes it will be the prior tagged install or even an earlier install. 
 

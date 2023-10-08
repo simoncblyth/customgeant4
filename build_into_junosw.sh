@@ -3,6 +3,10 @@ usage(){ cat << EOU
 build_into_junosw.sh
 =====================
 
+This way of building facilitates development of Custom4.
+It is not appropriate for production usage, where versioning 
+is more important than update cycle speed. 
+
 Usage
 ------
 
@@ -11,6 +15,7 @@ Usage
 
 ./build_into_junosw.sh put
    run rsync_put.sh syncing repo to workstation 
+   (only needed while github is blocked)
 
 ./build_into_junosw.sh build
    run build.sh installing Custom4 into junotop/ExternalLibs/custom4/\$VERSION 
@@ -20,15 +25,29 @@ Motivation
 ------------
 
 Development via tagged releases and junoenv machinery on workstation 
-is too painful, so take a dirty approach to install a Debug build
+is too painful. Because making any changes to Custom4 then needs making 
+github tags and doing nuclear (delete everything) re-installs because 
+the install directory of the Custom4 external changes which causes CMake 
+to get mixed up necessitating nuclear rebuilds. 
+
+Hence workaround this with a dirty approach that installs a Debug build
 into junotop/ExternalLibs/custom4/\$VERSION where the VERSION will
 typically be the untagged next version parsed from the CMakeLists.txt
+
+Crucially by keeping the VERSION the same as make changes to Custom4 
+can then easily update as the installation directory stays fixed so 
+there is no need for clean rebuilds or making tags. 
+
 
 Initial setup to use untagged "next" Custom4 VERSION on workstation
 ----------------------------------------------------------------------
  
 1. laptop: "c4 ; ./rsync_put.sh" sync Custom4 repo from laptop to workstation
-2. workstation: "c4 ; ./build_into_junosw.sh" build and install Custom4 into /data/blyth/junotop/ExternalLibs/custom4/VERSION
+   (alternatively use git, while github is accessible from workstation)
+
+2. workstation: "c4 ; ./build_into_junosw.sh" build and install Custom4 
+   into /data/blyth/junotop/ExternalLibs/custom4/VERSION
+
 3. workstation: manually prep the VERSION scripts based on prior VERSION, eg::
 
     N[blyth@localhost custom4]$ pwd
@@ -40,7 +59,7 @@ Initial setup to use untagged "next" Custom4 VERSION on workstation
 
 4. workstation: "jt ; vi bashrc.sh" set the version of Custom4 in jre (juno-runtime-environment) to the next VERSION just installed 
 5. exit session and reconnect 
-6. clean build Opticks. Atually only need to rebuild from qudarap onwards, 
+6. clean build Opticks. Actually only need to rebuild from qudarap onwards, 
    but simpler to clean build everything::
 
     o
@@ -48,6 +67,7 @@ Initial setup to use untagged "next" Custom4 VERSION on workstation
     om-clean
     om-conf
     oo
+
 
 Updating Custom4 workflow
 --------------------------
