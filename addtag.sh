@@ -15,6 +15,7 @@ Workflow:
         v0.1.4
         v0.1.5
 
+   Add an entry to the RELEASE_NOTES.rst 
 
 2. run addtag.sh checking VERSION and VERSION_NUMBER are consistent
 

@@ -2,9 +2,11 @@ Custom4 Release Notes
 ========================
 
 
-0.1.7 (not yet tagged)
------------------------
+0.1.7 
+------
 
+* no result changes from this release
+* improve documentation of tagging and development workflows 
 * util.sh script for tarball curl and scp to workstation 
 
 0.1.6
