@@ -71,6 +71,25 @@ References to Opticks and other related packages
 * https://simoncblyth.github.io/
 
 
+How to tag a Custom4 release
+-------------------------------
+
+::
+
+    c4
+    vi CMakeLists.txt      # bump the version 
+
+    git commit ..            
+    git add ..              
+    git push ..            # update code on github  
+
+    ./addtag.sh 
+    ./addtag.sh | sh       # update tags on github     
+
+
+
+
+
 How to update the Custom4 version used by junosw
 --------------------------------------------------
 

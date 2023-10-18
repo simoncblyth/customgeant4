@@ -2,6 +2,14 @@ Custom4 Release Notes
 ========================
 
 
+0.1.8
+-------
+
+* minor change in `ART_` struct : switching [:,3,2] from A_av to dot_pol_cross_mom_nrm to assist testing
+* remove obsolete `OLD_ART_` struct 
+* add tests/C4MultiLayrStack_Test2.sh comparing results from pypi tmm package with this package : get near perfect match
+* add tests/V.h minimal vector methods needed by C4MultiLayrStack_Test2.cc
+
 0.1.7 
 ------
 

@@ -15,11 +15,12 @@ Workflow:
         v0.1.4
         v0.1.5
 
-   Add an entry to the RELEASE_NOTES.rst 
+   Add an entry to the RELEASE_NOTES.rst for this version
 
 2. run addtag.sh checking VERSION and VERSION_NUMBER are consistent
 
 3. run addtag.sh again and pipe the commands to the shell 
+   which will add the tag and propagate that up to github 
 
 4. make a reference install of the just tagged version on laptop, before 
    making any further changes::
@@ -80,15 +81,31 @@ VERSION_NUMBER=$(perl -ne 'm,VERSION_NUMBER (\d*)\), && print $1' CMakeLists.txt
 
 VERSION=${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}
 
+
+
 cat << EOC
 ## addtag.sh 
 ##
 ## NB before piping the below commands to the shell make the following checks:
 ##
 ## 1. "git status" : check all changes are committed and pushed
+##
+EOC
+
+echo "## git status --porcelain | sed -e 's/^/## /' "
+git status --porcelain | sed -e 's/^/## /'
+
+cat << EOC
+##
 ## 2. "git tag" : ensure that the tag string extracted from the CMakeLists.txt is incremented
 ##    from the last one listed by "git tag"
 ## 
+EOC
+
+echo "## git tag | tail -10 | sed -e 's/^/## /' "
+git tag | tail -10 | sed -e 's/^/## /' 
+
+cat << EOC
 ##
 
 git tag -a v$VERSION -m "addtag.sh for VERSION $VERSION VERSION_NUMBER $VERSION_NUMBER extracted from CMakeLists.txt  "

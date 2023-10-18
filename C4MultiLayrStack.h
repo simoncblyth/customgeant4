@@ -282,55 +282,6 @@ inline std::ostream& operator<<(std::ostream& os, const Layr<T>& l)
 }
 #endif
 
-/**
-OLD_ART_  : Old inherited crazy layout  
-----------------------------------------
-
-   +---+--------+--------+--------+--------+
-   |   |  x     |  y     |  z     |  w     |
-   +===+========+========+========+========+
-   | 0 |  R_s   |  R_p   |  T_s   |  T_p   |
-   +---+--------+--------+--------+--------+
-   | 1 |  A_s   |  A_p   |  R_av  |  T_av  |
-   +---+--------+--------+--------+--------+
-   | 2 |  A_av  | ART_av |  wl    |  mct   |
-   +---+--------+--------+--------+--------+
-   | 3 |  A     | R      |  T     |  S     |
-   +---+--------+--------+--------+--------+
-
-
-**/
-
-template<typename F>
-struct OLD_ART_
-{   
-    // NB old inherited crazy layout  
-
-    F R_s;     // R_s = a.arts[:,0,0]
-    F R_p;     // R_p = a.arts[:,0,1]
-    F T_s;     // T_s = a.arts[:,0,2]
-    F T_p;     // T_p = a.arts[:,0,3]
-
-    F A_s;     // A_s = a.arts[:,1,0]
-    F A_p;     // A_p = a.arts[:,1,1]
-    F R_av;    // R_av   = a.arts[:,1,2]
-    F T_av;    // T_av   = a.arts[:,1,3]
-
-    F A_av;    // A_av   = a.arts[:,2,0]
-    F A_R_T_av ;  // A_R_T_av = a.arts[:,2,1] 
-    F wl ;     // wl  = a.arts[:,2,2]
-    F mct ;    // mct  = a.arts[:,2,3]   
-
-    F A ;       // A = a.arts[:,3,0]
-    F R ;       // R = a.arts[:,3,1]
-    F T ;       // T = a.arts[:,3,2]
-    F S ;       // S = a.arts[:,3,3]     S_pol vs P_pol power fraction 
-
-    LAYR_METHOD const F* cdata() const { return &R_s ; }
-    // persisted into shape (4,4) 
-};
-
-
 
 /**
 ART_ : rationalized layout  
@@ -345,7 +296,7 @@ ART_ : rationalized layout
 +---+--------+--------+--------+--------+
 | 2 |  T_s   |  T_p   |  T_av  |  T     |
 +---+--------+--------+--------+--------+
-| 3 |  SF    |  wl    | ART_av |  mct   |
+| 3 |  SF    |  wl    |  dpcmn |  mct   |
 +---+--------+--------+--------+--------+
 
 Checking A+R+T is very close to 1.::
@@ -354,8 +305,6 @@ Checking A+R+T is very close to 1.::
     art_sum = np.sum(art[:,:3], axis=1 )   
     one_dev =  np.abs( art_sum - 1. ).max() 
     assert one_dev < 1e-6 
-
-TODO: remove _av as pointless 
 
 **/
 
@@ -377,9 +326,9 @@ struct ART_
     F T_av;    // T_av = a.arts[:,2,2]
     F T ;      // T    = a.arts[:,2,3]
 
-    F SF ;      // SF        = a.arts[:,3,0]     S_pol vs P_pol power fraction 
+    F SF ;      // SF       = a.arts[:,3,0]     S_pol vs P_pol power fraction 
     F wl ;      // wl       = a.arts[:,3,1]
-    F ART_av ;  // ART_av   = a.arts[:,3,2] 
+    F dpcmn ;   // dpcmn    = a.arts[:,3,2]    dot_pol_cross_mom_nrm,   formerly ART_av (which is always 1.)
     F mct ;     // mct      = a.arts[:,3,3]   
 
     LAYR_METHOD const F* cdata() const { return &A_s ; }
@@ -418,8 +367,8 @@ inline std::ostream& operator<<(std::ostream& os, const ART_<F>& art )
         << std::endl 
         << " SF    " << std::fixed << std::setw(10) << std::setprecision(4) << art.SF 
         << " wl    " << std::fixed << std::setw(10) << std::setprecision(4) << art.wl 
-        << " ART_av" << std::fixed << std::setw(10) << std::setprecision(4) << art.ART_av 
-        << " mct  " << std::fixed << std::setw(10) << std::setprecision(4) << art.mct
+        << " dpcmn " << std::fixed << std::setw(10) << std::setprecision(4) << art.dpcmn 
+        << " mct   " << std::fixed << std::setw(10) << std::setprecision(4) << art.mct
         << std::endl 
         ;
     return os; 
@@ -594,6 +543,7 @@ void LAYR_METHOD Stack<F,N>::calc(F wl, F minus_cos_theta, F dot_pol_cross_mom_n
 
     art.wl = wl ; 
     art.mct = minus_cos_theta ; 
+    art.dpcmn = dot_pol_cross_mom_nrm ; 
 
     const complex<F> zOne(one,zero); 
     const complex<F> zI(zero,one); 
@@ -774,7 +724,6 @@ void LAYR_METHOD Stack<F,N>::calc(F wl, F minus_cos_theta, F dot_pol_cross_mom_n
     art.A_av   = (art.A_s+art.A_p)/two ;
     art.R_av   = (art.R_s+art.R_p)/two ;
     art.T_av   = (art.T_s+art.T_p)/two ;
-    art.ART_av = art.A_av + art.R_av + art.T_av ;  
 
     /**
     HMM : the _av are pointless, only used for normal incidence.
