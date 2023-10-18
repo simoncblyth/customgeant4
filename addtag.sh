@@ -23,7 +23,8 @@ Workflow:
    which will add the tag and propagate that up to github 
 
 4. make a reference install of the just tagged version on laptop, before 
-   making any further changes::
+   making any further changes (will probably need to delete the installed
+   pre-tagged version first)::
 
       ./build.sh info  # check VERSION and dirs 
       ./build.sh       # proceed 
