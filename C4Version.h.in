@@ -59,19 +59,19 @@ struct C4Version
            ;
 
 
-#if Custom4_VERSION_NUMBER >= 00105
-        ss  << " Custom4_VERSION_NUMBER >= 00105 " << std::endl ; 
-#elif Custom4_VERSION_NUMBER >= 00104
-        ss  << " Custom4_VERSION_NUMBER >= 00104  ( and not >= 00105 ) " << std::endl ; 
+#if Custom4_VERSION_NUMBER >= 105
+        ss  << " Custom4_VERSION_NUMBER >= 105 " << std::endl ; 
+#elif Custom4_VERSION_NUMBER >= 104
+        ss  << " Custom4_VERSION_NUMBER >= 104  ( and not >= 105 ) " << std::endl ; 
 #else
         ss << " Custom4_VERSION_NUMBER didnt fit into those branches " << std::endl ; 
 #endif
         ss << std::endl ; 
 
-#if Custom4_VERSION_NUMBER > 00105
-        ss << " Custom4_VERSION_NUMBER > 00105 " << std::endl ; 
-#elif Custom4_VERSION_NUMBER > 00104
-        ss << " Custom4_VERSION_NUMBER > 00104  ( and not > 00105 )  " << std::endl ; 
+#if Custom4_VERSION_NUMBER > 105
+        ss << " Custom4_VERSION_NUMBER > 105 " << std::endl ; 
+#elif Custom4_VERSION_NUMBER > 104
+        ss << " Custom4_VERSION_NUMBER > 104  ( and not > 105 )  " << std::endl ; 
 #else
         ss << " Custom4_VERSION_NUMBER didnt fit into those branches " << std::endl ; 
 #endif
