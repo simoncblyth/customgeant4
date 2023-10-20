@@ -184,12 +184,9 @@ void test_make_transverse()
 
 int main()
 {
-    /*
     test_dot<float>();  
     test_cross<float>();  
     test_rotateUz<float>();  
-    */
-
     test_make_transverse<float>(); 
 
     return 0 ; 
