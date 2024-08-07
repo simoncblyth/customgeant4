@@ -1,7 +1,7 @@
 #!/bin/bash -l 
 
-SDIR=$(cd $(dirname $BASH_SOURCE) && pwd)
+cd $(dirname $(realpath $BASH_SOURCE))
 export CUSTOM4_CMAKE_BUILD_TYPE=Debug
 
-$SDIR/build.sh 
+./build.sh 
 

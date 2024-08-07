@@ -3,6 +3,20 @@ usage(){ cat << EOU
 build.sh
 ===========
 
+Changes
+--------
+
+Aug 2024
+    add explanatory notes as consider angular upgrade
+
+April 2024
+    change default custom4 prefix directory to include "_Release" or "_Debug" 
+    for easier switching between them 
+
+
+Overview
+----------
+
 NB this works without any Opticks code or CMake machinery. 
 It does however require CMAKE_PREFIX_PATH envvar to find Geant4,CLHEP eg::
 
@@ -15,7 +29,6 @@ It does however require CMAKE_PREFIX_PATH envvar to find Geant4,CLHEP eg::
     /usr/local/opticks/externals
     /usr/local/optix
     epsilon:customgeant4 blyth$ 
-
 
 
 Temporarily return to a tagged version
@@ -111,21 +124,22 @@ REALDIR=$(cd $(dirname $BASH_SOURCE) && pwd)
 sdir=$(pwd)
 name=$(basename $sdir) 
 
-BASE=/tmp/$USER/$name
-bdir=$BASE/build 
-
 VERSION_MAJOR=$(perl -ne 'm,VERSION_MAJOR (\d*)\), && print $1' $REALDIR/CMakeLists.txt)
 VERSION_MINOR=$(perl -ne 'm,VERSION_MINOR (\d*)\), && print $1' $REALDIR/CMakeLists.txt)
 VERSION_PATCH=$(perl -ne 'm,VERSION_PATCH (\d*)\), && print $1' $REALDIR/CMakeLists.txt)
 VERSION=${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}
 
 
-custom4_prefix=${OPTICKS_PREFIX}_externals/custom4/$VERSION
+#custom4_cmake_build_type=Release
+custom4_cmake_build_type=Debug
+CUSTOM4_CMAKE_BUILD_TYPE=${CUSTOM4_CMAKE_BUILD_TYPE:-${custom4_cmake_build_type}}
+
+custom4_prefix=/usr/local/opticks_externals/custom4_${CUSTOM4_CMAKE_BUILD_TYPE}/$VERSION
 CUSTOM4_PREFIX=${CUSTOM4_PREFIX:-$custom4_prefix}
 
-custom4_cmake_build_type=Release
-#custom4_cmake_build_type=Debug
-CUSTOM4_CMAKE_BUILD_TYPE=${CUSTOM4_CMAKE_BUILD_TYPE:-${custom4_cmake_build_type}}
+
+BASE=/tmp/$USER/$name
+bdir=$BASE/build_${CUSTOM4_CMAKE_BUILD_TYPE}/$VERSION 
 
 
 defarg="info_install"
@@ -151,7 +165,6 @@ if [ "${arg/install}" != "$arg" ]; then
     make
     make install   
 fi 
-
 
 
 
