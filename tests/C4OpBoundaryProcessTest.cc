@@ -24,7 +24,27 @@ struct DummyPMTAccessor : public C4IPMTAccessor
     int    get_pmtcat( int pmtid  ) const { return 0 ; }
     void   get_stackspec( std::array<double, 16>& ss, int pmtcat, double energy_eV ) const { } ; 
     const char* get_typename() const { return NAME ; }
+
+    double get_pmtid_qe_angular( int pmtid, double energy, double lposcost, double minus_cos_theta ) const { return 1. ; }   
+
+    int  get_implementation_version() const ;
+    void set_implementation_version(int);
+
 };
+
+
+inline int DummyPMTAccessor::get_implementation_version() const
+{
+    return 1 ; 
+}
+
+inline void DummyPMTAccessor::set_implementation_version(int v)
+{
+}
+
+
+
+
 
 int main()
 {

@@ -83,11 +83,8 @@ struct C4CustomART
 {
     bool   dump ; 
     int    count ; 
-    double zlocal ; 
-#ifdef C4_DEBUG
-    double lposcost ; 
-#endif
     const C4IPMTAccessor* accessor ; 
+    int    implementation_version ;    
 
     G4double& theAbsorption ;
     G4double& theReflectivity ;
@@ -100,6 +97,7 @@ struct C4CustomART
     const G4ThreeVector& theRecoveredNormal ; 
     const G4double& thePhotonMomentum ; 
 
+    G4ThreeVector localPoint ; 
 #ifdef C4_DEBUG
     C4CustomART_Debug dbg ;  
 #endif
@@ -117,7 +115,9 @@ struct C4CustomART
         const G4double& thePhotonMomentum
     );  
 
-    double local_z( const G4Track& aTrack ); 
+    void   update_local_position( const G4Track& aTrack ); 
+    double local_z() const ;
+    double local_cost() const ;
     void doIt(const G4Track& aTrack, const G4Step& ); 
     std::string desc() const ; 
 
@@ -138,11 +138,8 @@ inline C4CustomART::C4CustomART(
     :
     dump(false),
     count(0),
-    zlocal(-1.),
-#ifdef C4_DEBUG
-    lposcost(-2.),
-#endif
     accessor(accessor_),
+    implementation_version(accessor->get_implementation_version()),
     theAbsorption(theAbsorption_),
     theReflectivity(theReflectivity_),
     theTransmittance(theTransmittance_),
@@ -151,13 +148,47 @@ inline C4CustomART::C4CustomART(
     OldMomentum(OldMomentum_),
     OldPolarization(OldPolarization_),
     theRecoveredNormal(theRecoveredNormal_),
-    thePhotonMomentum(thePhotonMomentum_)
+    thePhotonMomentum(thePhotonMomentum_),
+    localPoint(0.,0.,0.)
 {
 }
 
 /**
+C4CustomART::update_local_position
+-----------------------------------
+
+Call *update_local_position* once for each track before using 
+other methods such as *local_z*
+
+Typically this is done prior to *doIt* to check the 
+hemisphere to decide if *doIt* needs to be called.  
+
+**/
+
+
+inline void C4CustomART::update_local_position( const G4Track& aTrack )
+{
+    const G4AffineTransform& transform = aTrack.GetTouchable()->GetHistory()->GetTopTransform();
+    localPoint = transform.TransformPoint(theGlobalPoint);
+}
+
+
+
+/**
 C4CustomART::local_z
 -------------------------
+
+**/
+
+
+inline double C4CustomART::local_z() const
+{
+    return localPoint.z() ; 
+}
+
+/**
+C4CustomART::local_cost (aka lposcost)
+-------------------------------------------
 
 Q:What is lposcost for ?  
 
@@ -170,19 +201,13 @@ A:Preparing for doing this on GPU, as lposcost is available there already but zl
     159   return ptot == 0.0 ? 1.0 : dz/ptot;
     160 }
 
-
 **/
 
-inline double C4CustomART::local_z( const G4Track& aTrack )
+inline double C4CustomART::local_cost() const
 {
-    const G4AffineTransform& transform = aTrack.GetTouchable()->GetHistory()->GetTopTransform();
-    G4ThreeVector localPoint = transform.TransformPoint(theGlobalPoint);
-    zlocal = localPoint.z() ; 
-#ifdef C4_DEBUG
-    lposcost = localPoint.cosTheta() ;  
-#endif
-    return zlocal  ; 
+    return localPoint.cosTheta() ; 
 }
+
 
 
 /**
@@ -290,6 +315,7 @@ stack.ll[0].st.real()
     so it does represent the S polarization fraction 
 
 **/
+
 inline void C4CustomART::doIt(const G4Track& aTrack, const G4Step& )
 {
     G4double zero = 0. ; 
@@ -304,34 +330,57 @@ inline void C4CustomART::doIt(const G4Track& aTrack, const G4Step& )
 
     int pmtid = C4Touchable::VolumeIdentifier(&aTrack, true ); 
     int pmtcat = accessor->get_pmtcat( pmtid ) ; 
-    double _qe = minus_cos_theta > 0. ? 0.0 : accessor->get_pmtid_qe( pmtid, energy ) ;  // energy_eV ?
-    // following the old junoPMTOpticalModel with "backwards" _qe always zero 
 
     std::array<double,16> a_spec ; 
     accessor->get_stackspec(a_spec, pmtcat, energy_eV ); 
-
     const double* ss = a_spec.data() ; 
 
     Stack<double,4> stack ; 
-
     theEfficiency = zero ;
-    if( minus_cos_theta < zero ) // only ingoing photons 
-    {
-        stack.calc( wavelength_nm, minus_one, zero, ss, 16u );  
-        theEfficiency = _qe/stack.art.A ;    // aka escape_fac
+    double _qe = zero ; 
+    double lposcost = local_cost();  
 
-        bool expect = theEfficiency <= 1. ; 
-        if(!expect) std::cerr
-            << "C4CustomART::doIt"
-            << " FATAL "
-            << " ERR: theEfficiency > 1. : " << theEfficiency
-            << " _qe " << _qe
-            << " stack.art.A (aka An) " << stack.art.A 
-            << std::endl 
-            ;
-        assert( expect ); 
+    if(implementation_version == 0 )
+    {
+        _qe = minus_cos_theta > 0. ? 0.0 : accessor->get_pmtid_qe( pmtid, energy ) ;  // energy_eV ?
+        // following the old junoPMTOpticalModel with "backwards" _qe always zero 
+        if( minus_cos_theta < zero ) 
+        {
+            // normal incidence calc only needed for ingoing photons as _qe is fixed to zero for outgoing  
+            stack.calc( wavelength_nm, minus_one, zero, ss, 16u );  // normal incidence calc 
+            theEfficiency = _qe/stack.art.A ;                       // aka escape_fac
+        }
     }
+    else
+    {
+        // allowing non-zero "backwards" _qe means must do norml incidence calc every time as need theEfficiency
+        _qe = accessor->get_pmtid_qe_angular( pmtid, energy, lposcost, minus_cos_theta ) ; 
+        stack.calc( wavelength_nm, minus_one      , zero, ss, 16u );  // for normal incidence efficiency 
+        theEfficiency = _qe/stack.art.A ;                       // aka escape_fac
+    }
+
+#ifdef C4_DEBUG
+    dbg.An = stack.art.A ; 
+    dbg.Rn = stack.art.R  ; 
+    dbg.Tn = stack.art.T  ; 
+    dbg.escape_fac = theEfficiency ; 
+#endif
     stack.calc( wavelength_nm, minus_cos_theta, dot_pol_cross_mom_nrm, ss, 16u );  
+
+
+
+    bool expect = theEfficiency <= 1. ; 
+    if(!expect) std::cerr
+        << "C4CustomART::doIt"
+        << " implementation_version " << implementation_version
+        << " FATAL "
+        << " ERR: theEfficiency > 1. : " << theEfficiency
+        << " _qe " << _qe
+        << " lposcost " << lposcost
+        << " stack.art.A (aka An) " << stack.art.A 
+        << std::endl 
+        ;
+    assert( expect ); 
 
     const double& A = stack.art.A ; 
     const double& R = stack.art.R ; 
@@ -343,11 +392,13 @@ inline void C4CustomART::doIt(const G4Track& aTrack, const G4Step& )
 
     if(dump) std::cerr   
         << "C4CustomART::doIt"
+        << " implementation_version " << implementation_version
         << std::endl 
         << " pmtid " << pmtid << std::endl 
         << " _qe                      : " << std::fixed << std::setw(10) << std::setprecision(4) << _qe  << std::endl 
         << " minus_cos_theta          : " << std::fixed << std::setw(10) << std::setprecision(4) << minus_cos_theta  << std::endl 
         << " dot_pol_cross_mom_nrm    : " << std::fixed << std::setw(10) << std::setprecision(4) << dot_pol_cross_mom_nrm  << std::endl 
+        << " lposcost                 : " << std::fixed << std::setw(10) << std::setprecision(4) << lposcost << std::endl 
         << std::endl 
         << " stack " 
         << std::endl 
@@ -366,18 +417,16 @@ inline void C4CustomART::doIt(const G4Track& aTrack, const G4Step& )
     dbg.T = T ; 
     dbg._qe = _qe ; 
 
-    dbg.An = An ; 
-    dbg.Rn = stackNormal.art.R  ; 
-    dbg.Tn = stackNormal.art.T  ; 
-    dbg.escape_fac = escape_fac ; 
-
     dbg.minus_cos_theta = minus_cos_theta ; 
     dbg.wavelength_nm   = wavelength_nm ; 
     dbg.pmtid           = double(pmtid) ; 
+    dbg.lposcost        = lposcost ; 
 #endif
 
     count += 1 ; 
 }
+
+
 
 inline std::string C4CustomART::desc() const 
 {

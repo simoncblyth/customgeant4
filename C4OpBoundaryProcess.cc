@@ -504,7 +504,8 @@ C4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
             //[OpticalSurface.mpt.CustomPrefix
             if( OpticalSurfaceName0 == '@' || OpticalSurfaceName0 == '#' )  // only customize specially named OpticalSurfaces 
             {
-                if( m_custom_art->local_z(aTrack) < 0. ) // lower hemi : No customization, standard boundary  
+                m_custom_art->update_local_position(aTrack);
+                if( m_custom_art->local_z() < 0. ) // lower hemi : No customization, standard boundary  
                 {
                     m_custom_status = 'Z' ;
                 }

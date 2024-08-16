@@ -19,7 +19,7 @@ struct C4CustomART_Debug
     double minus_cos_theta ;  // 2  
     double wavelength_nm ; 
     double pmtid ; 
-    double spare ; 
+    double lposcost ; 
 
     void serialize( std::array<double, 16>& a );  
     const double* data() const ; 
