@@ -398,6 +398,28 @@ How an equivalent calc is done on GPU within Opticks ?
     1770     float ARTE[4] ;
     1771     if(lpmtid > -1) pmt->get_lpmtid_ARTE(ARTE, lpmtid, p.wavelength, minus_cos_theta, dot_pol_cross_mom_nrm );
     1772 
+    ....
+    1780     const float& theAbsorption = ARTE[0];
+    1781     //const float& theReflectivity = ARTE[1]; 
+    1782     const float& theTransmittance = ARTE[2];
+    1783     const float& theEfficiency = ARTE[3];
+    1784 
+    1785     float u_theAbsorption = curand_uniform(&rng);
+    1786     int action = u_theAbsorption < theAbsorption  ? BREAK : CONTINUE ;
+    ....
+    1795     if( action == BREAK )
+    1796     {
+    1797         float u_theEfficiency = curand_uniform(&rng) ;
+    1798         flag = u_theEfficiency < theEfficiency ? SURFACE_DETECT : SURFACE_ABSORB ;
+    1799     }
+    1800     else
+    1801     {
+    1802         propagate_at_boundary( flag, rng, ctx, theTransmittance  );
+    1803     }
+    1804     return action ;
+    1805 }
+
+
 
 
 Q: add lposcost arg to pmt->get_lpmtid_ARTE ?
