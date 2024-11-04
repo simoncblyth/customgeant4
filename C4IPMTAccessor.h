@@ -9,6 +9,10 @@ struct C4IPMTAccessor
     virtual double get_qescale( int pmtid ) const = 0 ;
     virtual int    get_pmtcat( int pmtid  ) const = 0 ;  
     virtual void   get_stackspec( std::array<double, 16>& ss, int pmtcat, double energy_eV ) const = 0 ; 
+
+    virtual void   get_stackspec_pmtid_theta_deg( std::array<double, 16>& ss, int pmtcat, int pmtid, double energy_eV, double theta_deg ) const = 0 ; 
+
+
     virtual const char* get_typename() const = 0 ; 
 
     virtual double get_pmtid_qe_angular(int pmtid,double energy, double lposcost, double minus_cos_theta_aoi) const = 0 ; 

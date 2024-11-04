@@ -81,6 +81,15 @@ Do you agree with this argument ?
 
 struct C4CustomART
 {
+    enum { ORIGINAL = 0,
+           TRANSIENT = -1, 
+           YUHAN = 1 }; 
+
+    static constexpr const char* _ORIGINAL  = "ORIGINAL  : always with zero backwards qe " ; 
+    static constexpr const char* _TRANSIENT = "TRANSIENT : incomplete " ; 
+    static constexpr const char* _YUHAN     = "YUHAN     : angular and pmtid dependent qe, theEfficiency one " ; 
+
+
     bool   dump ; 
     int    count ; 
     const C4IPMTAccessor* accessor ; 
@@ -118,7 +127,10 @@ struct C4CustomART
     void   update_local_position( const G4Track& aTrack ); 
     double local_z() const ;
     double local_cost() const ;
+    double local_theta() const ;
     void doIt(const G4Track& aTrack, const G4Step& ); 
+
+    static const char* ImplementationDescription(int iv);
     std::string desc() const ; 
 
 }; 
@@ -207,6 +219,13 @@ inline double C4CustomART::local_cost() const
 {
     return localPoint.cosTheta() ; 
 }
+
+inline double C4CustomART::local_theta() const
+{
+    return localPoint.theta() ; 
+}
+
+
 
 
 
@@ -332,17 +351,17 @@ inline void C4CustomART::doIt(const G4Track& aTrack, const G4Step& )
     int pmtcat = accessor->get_pmtcat( pmtid ) ; 
 
     std::array<double,16> a_spec ; 
-    accessor->get_stackspec(a_spec, pmtcat, energy_eV ); 
     const double* ss = a_spec.data() ; 
 
     Stack<double,4> stack ; 
     theEfficiency = zero ;
     double _qe = zero ; 
-    double lposcost = local_cost();  
 
-    if(implementation_version == 0 )
+    if(implementation_version == ORIGINAL) 
     {
-        _qe = minus_cos_theta > 0. ? 0.0 : accessor->get_pmtid_qe( pmtid, energy ) ;  // energy_eV ?
+        accessor->get_stackspec(a_spec, pmtcat, energy_eV ); 
+
+        _qe = minus_cos_theta > 0. ? 0.0 : accessor->get_pmtid_qe( pmtid, energy ) ; 
         // following the old junoPMTOpticalModel with "backwards" _qe always zero 
         if( minus_cos_theta < zero ) 
         {
@@ -351,13 +370,20 @@ inline void C4CustomART::doIt(const G4Track& aTrack, const G4Step& )
             theEfficiency = _qe/stack.art.A ;                       // aka escape_fac
         }
     }
-    else
+    else if( implementation_version == TRANSIENT )
     {
-        // allowing non-zero "backwards" _qe means must do norml incidence calc every time as need theEfficiency
         _qe = accessor->get_pmtid_qe_angular( pmtid, energy, lposcost, minus_cos_theta ) ; 
-        stack.calc( wavelength_nm, minus_one      , zero, ss, 16u );  // for normal incidence efficiency 
+        // allowing non-zero "backwards" _qe means must do norml incidence calc every time as need theEfficiency
+        stack.calc( wavelength_nm, minus_one, zero, ss, 16u );  // normal incidence calc 
         theEfficiency = _qe/stack.art.A ;                       // aka escape_fac
     }
+    else if( implementation_version == YUHAN )
+    {
+        double theta_deg = localPoint.theta()*360./CLHEP::twopi; 
+        accessor->get_stackspec_pmtid_theta_deg(a_spec, pmtcat, pmtid, energy_eV, theta_deg );  
+        theEfficiency = 1. ; 
+    }
+
 
 #ifdef C4_DEBUG
     dbg.An = stack.art.A ; 
@@ -393,6 +419,7 @@ inline void C4CustomART::doIt(const G4Track& aTrack, const G4Step& )
     if(dump) std::cerr   
         << "C4CustomART::doIt"
         << " implementation_version " << implementation_version
+        << " Impl " << ImplementationDescription(implementation_version)
         << std::endl 
         << " pmtid " << pmtid << std::endl 
         << " _qe                      : " << std::fixed << std::setw(10) << std::setprecision(4) << _qe  << std::endl 
@@ -428,6 +455,20 @@ inline void C4CustomART::doIt(const G4Track& aTrack, const G4Step& )
 
 
 
+inline const char* C4CustomART::ImplementationDescription(int iv)
+{
+    const char* str = nullptr ; 
+    switch(iv)
+    {
+        case  ORIGINAL: str = _ORIGINAL  ; break 
+        case TRANSIENT: str = _TRANSIENT ; break 
+        case     YUHAN: str = _YUHAN     ; break 
+    }
+    return str ; 
+}
+
+
+
 inline std::string C4CustomART::desc() const 
 {
     std::stringstream ss ; 
@@ -439,6 +480,7 @@ inline std::string C4CustomART::desc() const
        << " theReflectivity " << std::fixed << std::setw(10) << std::setprecision(5) << theReflectivity
        << " theTransmittance " << std::fixed << std::setw(10) << std::setprecision(5) << theTransmittance
        << " theEfficiency " << std::fixed << std::setw(10) << std::setprecision(5) << theEfficiency
+       << " Impl " << ImplementationDescription(implementation_version)
        ;
     std::string str = ss.str(); 
     return str ; 
