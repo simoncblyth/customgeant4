@@ -19,6 +19,8 @@ struct C4IPMTAccessor
     virtual int    get_implementation_version() const = 0 ; 
     virtual void   set_implementation_version(int v) = 0 ; 
 
+    virtual ~C4IPMTAccessor(){} ;
+
 };
 
 
