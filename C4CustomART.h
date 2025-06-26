@@ -4,38 +4,38 @@ C4CustomART : Used by C4OpBoundaryProcess for Custom calc of A/R/T coeffs
 ==================================================================================
 
 * CustomART is instanciated by the CustomG4OpBoundaryProcess ctor
-* aims to provides customization with minimal code change to CustomG4OpBoundaryProcess 
-* aims to make few detector specific assumptions by moving such specifics into 
-  the PMTAccessor which is accessed via IPMTAccessor protocol 
+* aims to provides customization with minimal code change to CustomG4OpBoundaryProcess
+* aims to make few detector specific assumptions by moving such specifics into
+  the PMTAccessor which is accessed via IPMTAccessor protocol
 
 What detector/Geant4 geometry specific assumptions are made ?
 ---------------------------------------------------------------
 
-1. ART customized for surfaces with names starting with '@' on local_z > 0. 
+1. ART customized for surfaces with names starting with '@' on local_z > 0.
 2. pmtid obtained from Geant4 volume ReplicaNumber
- 
+
 
 Headers used by CustomART.h were developed and tested elsewhere
 ------------------------------------------------------------------
 
-MultiLayrStack.h 
+MultiLayrStack.h
     Developed as Layr.h at https://github.com/simoncblyth/j/blob/main/Layr/Layr.h
 
 S4Touchable
-    Developed as U4Touchable.h at https://bitbucket.org/simoncblyth/opticks/src/master/u4/U4Touchable.h 
+    Developed as U4Touchable.h at https://bitbucket.org/simoncblyth/opticks/src/master/u4/U4Touchable.h
 
 Overview
 ----------
 
-CustomART::doIt only sets the below within the host CustomG4OpBoundaryProcess, 
+CustomART::doIt only sets the below within the host CustomG4OpBoundaryProcess,
 via reference ctor arguments::
 
     theTransmittance
     theReflectivity
-    theEfficiency 
+    theEfficiency
 
 
-Is 2-layer (Pyrex,Vacuum) polarization direction calc applicable to 4-layer (Pyrex,ARC,PHC,Vacuum) situation ? 
+Is 2-layer (Pyrex,Vacuum) polarization direction calc applicable to 4-layer (Pyrex,ARC,PHC,Vacuum) situation ?
 -----------------------------------------------------------------------------------------------------------------
 
 The Geant4 calculation of polarization direction for a simple
@@ -43,11 +43,11 @@ boundary between two layers is based on continuity of E and B fields
 in S and P directions at the boundary, essentially Maxwells Eqn boundary conditions.
 Exactly the same thing yields Snells law::
 
-    n1 sin t1  = n2 sin t2 
+    n1 sin t1  = n2 sin t2
 
 My thinking on this is that Snell's law with a bunch of layers would be::
 
-    n1 sin t1 = n2 sin t2 =  n3 sin t3 =  n4 sin t4 
+    n1 sin t1 = n2 sin t2 =  n3 sin t3 =  n4 sin t4
 
 So the boundary conditions from 1->4 where n1 and n4 are real still gives::
 
@@ -55,24 +55,24 @@ So the boundary conditions from 1->4 where n1 and n4 are real still gives::
 
 Even when n2,t2,n3,t3 are complex.
 
-So by analogy that makes me think that the 2-layer polarization calculation 
-between layers 1 and 4 (as done by G4OpBoundaryProcess) 
-should still be valid even when there is a stack of extra layers 
-inbetween layer 1 and 4. 
+So by analogy that makes me think that the 2-layer polarization calculation
+between layers 1 and 4 (as done by G4OpBoundaryProcess)
+should still be valid even when there is a stack of extra layers
+inbetween layer 1 and 4.
 
 Essentially the stack calculation changes A,R,T so it changes
-how much things happen : but it doesnt change what happens. 
-So the two-layer polarization calculation from first and last layer 
+how much things happen : but it doesnt change what happens.
+So the two-layer polarization calculation from first and last layer
 should still be valid to the situation of the stack.
 
-Do you agree with this argument ? 
+Do you agree with this argument ?
 
 **/
 
 #include "G4ThreeVector.hh"
 
 #include "C4IPMTAccessor.h"
-#include "C4MultiLayrStack.h"  
+#include "C4MultiLayrStack.h"
 #include "C4Touchable.h"
 
 #ifdef C4_DEBUG
@@ -81,62 +81,65 @@ Do you agree with this argument ?
 
 struct C4CustomART
 {
-    enum { ORIGINAL = 0,
-           TRANSIENT = -1, 
-           YUHAN = 1 }; 
+    enum {
+           PLACEHOLDER = 0,
+           ORIGINAL = 1,
+           TRANSIENT = -1,
+           YUHAN = 2 };
 
-    static constexpr const char* _ORIGINAL  = "ORIGINAL  : always with zero backwards qe " ; 
-    static constexpr const char* _TRANSIENT = "TRANSIENT : incomplete " ; 
-    static constexpr const char* _YUHAN     = "YUHAN     : angular and pmtid dependent qe, theEfficiency one " ; 
+    static constexpr const char* _PLACEHOLDER  = "PLACEHOLDER  : when no PMT info provided " ;
+    static constexpr const char* _ORIGINAL  = "ORIGINAL  : always with zero backwards qe " ;
+    static constexpr const char* _TRANSIENT = "TRANSIENT : incomplete " ;
+    static constexpr const char* _YUHAN     = "YUHAN     : angular and pmtid dependent qe, theEfficiency one " ;
 
 
-    bool   dump ; 
-    int    count ; 
-    const C4IPMTAccessor* accessor ; 
-    int    implementation_version ;    
+    bool   dump ;
+    int    count ;
+    const C4IPMTAccessor* accessor ;
+    int    implementation_version ;
 
     G4double& theAbsorption ;
     G4double& theReflectivity ;
     G4double& theTransmittance ;
     G4double& theEfficiency ;
 
-    const G4ThreeVector& theGlobalPoint ; 
-    const G4ThreeVector& OldMomentum ; 
-    const G4ThreeVector& OldPolarization ; 
-    const G4ThreeVector& theRecoveredNormal ; 
-    const G4double& thePhotonMomentum ; 
+    const G4ThreeVector& theGlobalPoint ;
+    const G4ThreeVector& OldMomentum ;
+    const G4ThreeVector& OldPolarization ;
+    const G4ThreeVector& theRecoveredNormal ;
+    const G4double& thePhotonMomentum ;
 
-    G4ThreeVector localPoint ; 
+    G4ThreeVector localPoint ;
 #ifdef C4_DEBUG
-    C4CustomART_Debug dbg ;  
+    C4CustomART_Debug dbg ;
 #endif
 
     C4CustomART(
-        const C4IPMTAccessor* accessor, 
+        const C4IPMTAccessor* accessor,
         G4double& theAbsorption,
         G4double& theReflectivity,
         G4double& theTransmittance,
         G4double& theEfficiency,
-        const G4ThreeVector& theGlobalPoint,  
-        const G4ThreeVector& OldMomentum,  
+        const G4ThreeVector& theGlobalPoint,
+        const G4ThreeVector& OldMomentum,
         const G4ThreeVector& OldPolarization,
         const G4ThreeVector& theRecoveredNormal,
         const G4double& thePhotonMomentum
-    );  
+    );
 
-    void   update_local_position( const G4Track& aTrack ); 
+    void   update_local_position( const G4Track& aTrack );
     double local_z() const ;
     double local_cost() const ;
     double local_theta() const ;
-    void doIt(const G4Track& aTrack, const G4Step& ); 
+    void doIt(const G4Track& aTrack, const G4Step& );
 
     static const char* ImplementationDescription(int iv);
-    std::string desc() const ; 
+    std::string desc() const ;
 
-}; 
+};
 
 inline C4CustomART::C4CustomART(
-    const C4IPMTAccessor* accessor_, 
+    const C4IPMTAccessor* accessor_,
           G4double& theAbsorption_,
           G4double& theReflectivity_,
           G4double& theTransmittance_,
@@ -151,7 +154,7 @@ inline C4CustomART::C4CustomART(
     dump(false),
     count(0),
     accessor(accessor_),
-    implementation_version(accessor->get_implementation_version()),
+    implementation_version(accessor ? accessor->get_implementation_version() : PLACEHOLDER ),
     theAbsorption(theAbsorption_),
     theReflectivity(theReflectivity_),
     theTransmittance(theTransmittance_),
@@ -169,11 +172,11 @@ inline C4CustomART::C4CustomART(
 C4CustomART::update_local_position
 -----------------------------------
 
-Call *update_local_position* once for each track before using 
+Call *update_local_position* once for each track before using
 other methods such as *local_z*
 
-Typically this is done prior to *doIt* to check the 
-hemisphere to decide if *doIt* needs to be called.  
+Typically this is done prior to *doIt* to check the
+hemisphere to decide if *doIt* needs to be called.
 
 **/
 
@@ -195,18 +198,18 @@ C4CustomART::local_z
 
 inline double C4CustomART::local_z() const
 {
-    return localPoint.z() ; 
+    return localPoint.z() ;
 }
 
 /**
 C4CustomART::local_cost (aka lposcost)
 -------------------------------------------
 
-Q:What is lposcost for ?  
+Q:What is lposcost for ?
 
-A:Preparing for doing this on GPU, as lposcost is available there already but zlocal is not, 
-  so want to check the sign of lposcost is following that of zlocal. It looks 
-  like it should:: 
+A:Preparing for doing this on GPU, as lposcost is available there already but zlocal is not,
+  so want to check the sign of lposcost is following that of zlocal. It looks
+  like it should::
 
     157 inline double Hep3Vector::cosTheta() const {
     158   double ptot = mag();
@@ -217,12 +220,12 @@ A:Preparing for doing this on GPU, as lposcost is available there already but zl
 
 inline double C4CustomART::local_cost() const
 {
-    return localPoint.cosTheta() ; 
+    return localPoint.cosTheta() ;
 }
 
 inline double C4CustomART::local_theta() const
 {
-    return localPoint.theta() ; 
+    return localPoint.theta() ;
 }
 
 
@@ -234,63 +237,63 @@ C4CustomART::doIt
 --------------------
 
 Called from CustomG4OpBoundaryProcess::PostStepDoIt only for optical surfaces
-with names starting with the special prefix character '@'  
+with names starting with the special prefix character '@'
 
 NB stack is flipped for minus_cos_theta > 0. so:
 
 * stack.ll[0] always incident side
-* stack.ll[3] always transmission side 
+* stack.ll[3] always transmission side
 
 Why theEfficiency is _qe/An ?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Consider factorization of _qe obtained from *get_pmtid_qe* as function of pmtid and energy::
 
-     _qe = An * escape_fac  
+     _qe = An * escape_fac
 
 An
-    Normal incidence absorption (from An = 1-Rn-Tn) 
-    depending on aoi, wl, material properties of the stack including 
+    Normal incidence absorption (from An = 1-Rn-Tn)
+    depending on aoi, wl, material properties of the stack including
     complex refractive indices and thicknesses of PHC and ARC.
-    (Fresnel calc, ie Maxwells EM boundary conditions) 
+    (Fresnel calc, ie Maxwells EM boundary conditions)
 
 escape_fac
     fraction of photoelectrons that escape and travel from cathode to dynode/MCP and form signal,
     depending on fields inside the PMT vacuum, shape of dynodes/MCP etc. (does not depend on aoi).
-    Within the simulation this escape_fac is taken to express the fraction 
-    of absorbed photons that are detected. 
+    Within the simulation this escape_fac is taken to express the fraction
+    of absorbed photons that are detected.
 
-    Currently there appears be be an assumption that escape_fac does not depend on the position on the PMT. 
-    Some position angle dependence (not same as aoi) is a possibility. 
+    Currently there appears be be an assumption that escape_fac does not depend on the position on the PMT.
+    Some position angle dependence (not same as aoi) is a possibility.
 
 See https://link.springer.com/article/10.1140/epjc/s10052-022-10288-y "A new optical model for photomultiplier tubes"
 
 From that paper it seems the _qe seems is obtained from normal incidence measurements in LAB
-(linear alkylbenzene) which has refractive index close to Pyrex, so there is very little reflection 
-on LAB/Pyrex boundary and hence the calculated normal incidence absorption An from the 4 layer 
-stack Pyrex/ARC/PHC/Vacuum at normal incidence can be compared with the measured _qe 
-in order to provide a non-aoi dependent escape_fac factor expressing the fraction of 
-absorbed photons that are regarded as being detected. 
+(linear alkylbenzene) which has refractive index close to Pyrex, so there is very little reflection
+on LAB/Pyrex boundary and hence the calculated normal incidence absorption An from the 4 layer
+stack Pyrex/ARC/PHC/Vacuum at normal incidence can be compared with the measured _qe
+in order to provide a non-aoi dependent escape_fac factor expressing the fraction of
+absorbed photons that are regarded as being detected.
 
 
 3-way ART to 2-way RT probability rescaling
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 
-A,R,T are 3-way probabilities summing to 1. 
-BUT CustomG4OpBoundaryProcess::DielectricDielectric expects  
-*theTransmittance* to be a 2-way Transmit-or-Reflect probability. 
+
+A,R,T are 3-way probabilities summing to 1.
+BUT CustomG4OpBoundaryProcess::DielectricDielectric expects
+*theTransmittance* to be a 2-way Transmit-or-Reflect probability.
 So the 3-way probabilities are scaled into 2-way ones, eg::
 
-    theAbsorption = A ; 
-    theReflectivity  = R/(1.-A) ; 
-    theTransmittance = T/(1.-A)  ;   
+    theAbsorption = A ;
+    theReflectivity  = R/(1.-A) ;
+    theTransmittance = T/(1.-A)  ;
 
 
-    (A, R, T)   ( 0.5,  0.25,   0.25 )    
+    (A, R, T)   ( 0.5,  0.25,   0.25 )
 
                         0.25        0.25
      ->( R, T)   (    --------  ,  -------- ) =  ( 0.5, 0.5 )
-                       (1-0.5)     (1-0.5) ) 
+                       (1-0.5)     (1-0.5) )
 
 
 E_s2 : how that corresponds to polarization power fraction
@@ -301,101 +304,102 @@ E_s2 : how that corresponds to polarization power fraction
      mom       nrm
          +--s--+
           \    |
-           \   | 
-     pol.   \  |  
-             \ | 
+           \   |
+     pol.   \  |
+             \ |
               \|
      ----------0-------
 
-OldMomentum.cross(theRecoveredNormal) 
-    transverse direction, eg out the page 
-    (OldMomentum, theRecoveredNoraml are normalized, 
-    so magnitude will be sine of angle between mom and nrm) 
+OldMomentum.cross(theRecoveredNormal)
+    transverse direction, eg out the page
+    (OldMomentum, theRecoveredNoraml are normalized,
+    so magnitude will be sine of angle between mom and nrm)
 
-(OldPolarization*OldMomentum.cross(theRecoveredNormal)) 
+(OldPolarization*OldMomentum.cross(theRecoveredNormal))
     dot product between the OldPolarization and transverse direction
     is expressing the S polarization fraction
-    (OldPolarization is normalized so the magnitude will be 
+    (OldPolarization is normalized so the magnitude will be
      cos(angle-between-pol-and-transverse)*sin(angle-between-mom-and-nrm)
 
-    * hmm pulling out "pol_dot_mom_cross_nrm" argument would provide some splitting 
-    * dot product with a cross product is the determinant of the three vectors, 
-      thats the volume of the parallelopiped formed by the vectors 
-      
+    * hmm pulling out "pol_dot_mom_cross_nrm" argument would provide some splitting
+    * dot product with a cross product is the determinant of the three vectors,
+      thats the volume of the parallelopiped formed by the vectors
+
 
 stack.ll[0].st.real()
     thus is just sqrt(1.-mct*mct) so its "st" sine(angle-between-mom-and-normal)
-   
-    * mct is OldMomentum*theRecoveredNormal (both those are normalized) 
-    * no need to involve stack or stackspec  
+
+    * mct is OldMomentum*theRecoveredNormal (both those are normalized)
+    * no need to involve stack or stackspec
 
 (OldPolarization*OldMomentum.cross(theRecoveredNormal))/stack.ll[0].st.real()
     division by "st" brings this to cos(angle-betweel-pol-and-tranverse)
-    so it does represent the S polarization fraction 
+    so it does represent the S polarization fraction
 
 **/
 
 inline void C4CustomART::doIt(const G4Track& aTrack, const G4Step& )
 {
-    G4double zero = 0. ; 
-    G4double minus_one = -1. ; 
-    G4double minus_cos_theta = OldMomentum*theRecoveredNormal ; 
-    G4double dot_pol_cross_mom_nrm = OldPolarization*OldMomentum.cross(theRecoveredNormal) ; 
+    G4double zero = 0. ;
+    G4double minus_one = -1. ;
+    G4double minus_cos_theta = OldMomentum*theRecoveredNormal ;
+    G4double dot_pol_cross_mom_nrm = OldPolarization*OldMomentum.cross(theRecoveredNormal) ;
+    G4double lposcost = local_cost();
 
-    G4double energy = thePhotonMomentum ; 
+    G4double energy = thePhotonMomentum ;
     G4double wavelength = CLHEP::twopi*CLHEP::hbarc/energy ;
     G4double energy_eV = energy/CLHEP::eV ;
-    G4double wavelength_nm = wavelength/CLHEP::nm ; 
+    G4double wavelength_nm = wavelength/CLHEP::nm ;
 
-    int pmtid = C4Touchable::VolumeIdentifier(&aTrack, true ); 
-    int pmtcat = accessor->get_pmtcat( pmtid ) ; 
+    int pmtid = C4Touchable::VolumeIdentifier(&aTrack, true );
+    int pmtcat = accessor->get_pmtcat( pmtid ) ;
 
-    std::array<double,16> a_spec ; 
-    const double* ss = a_spec.data() ; 
+    std::array<double,16> a_spec ;
+    const double* ss = a_spec.data() ;
 
-    Stack<double,4> stack ; 
+    Stack<double,4> stack ;
     theEfficiency = zero ;
-    double _qe = zero ; 
+    double _qe = zero ;
 
-    if(implementation_version == ORIGINAL) 
+    if(implementation_version == ORIGINAL)
     {
-        accessor->get_stackspec(a_spec, pmtcat, energy_eV ); 
+        accessor->get_stackspec(a_spec, pmtcat, energy_eV );
 
-        _qe = minus_cos_theta > 0. ? 0.0 : accessor->get_pmtid_qe( pmtid, energy ) ; 
-        // following the old junoPMTOpticalModel with "backwards" _qe always zero 
-        if( minus_cos_theta < zero ) 
+        _qe = minus_cos_theta > 0. ? 0.0 : accessor->get_pmtid_qe( pmtid, energy ) ;
+        // following the old junoPMTOpticalModel with "backwards" _qe always zero
+        if( minus_cos_theta < zero )
         {
-            // normal incidence calc only needed for ingoing photons as _qe is fixed to zero for outgoing  
-            stack.calc( wavelength_nm, minus_one, zero, ss, 16u );  // normal incidence calc 
+            // normal incidence calc only needed for ingoing photons as _qe is fixed to zero for outgoing
+            stack.calc( wavelength_nm, minus_one, zero, ss, 16u );  // normal incidence calc
             theEfficiency = _qe/stack.art.A ;                       // aka escape_fac
         }
     }
     else if( implementation_version == TRANSIENT )
     {
-        _qe = accessor->get_pmtid_qe_angular( pmtid, energy, lposcost, minus_cos_theta ) ; 
+        _qe = accessor->get_pmtid_qe_angular( pmtid, energy, lposcost, minus_cos_theta ) ;
         // allowing non-zero "backwards" _qe means must do norml incidence calc every time as need theEfficiency
-        stack.calc( wavelength_nm, minus_one, zero, ss, 16u );  // normal incidence calc 
+        stack.calc( wavelength_nm, minus_one, zero, ss, 16u );  // normal incidence calc
         theEfficiency = _qe/stack.art.A ;                       // aka escape_fac
     }
     else if( implementation_version == YUHAN )
     {
-        double theta_deg = localPoint.theta()*360./CLHEP::twopi; 
-        accessor->get_stackspec_pmtid_theta_deg(a_spec, pmtcat, pmtid, energy_eV, theta_deg );  
-        theEfficiency = 1. ; 
+        double theta_deg = localPoint.theta()*360./CLHEP::twopi;
+        accessor->get_stackspec_pmtid_theta_deg(a_spec, pmtcat, pmtid, energy_eV, theta_deg );
+        theEfficiency = 1. ;
     }
 
 
 #ifdef C4_DEBUG
-    dbg.An = stack.art.A ; 
-    dbg.Rn = stack.art.R  ; 
-    dbg.Tn = stack.art.T  ; 
-    dbg.escape_fac = theEfficiency ; 
+    dbg.An = stack.art.A ;
+    dbg.Rn = stack.art.R  ;
+    dbg.Tn = stack.art.T  ;
+    dbg.escape_fac = theEfficiency ;
 #endif
-    stack.calc( wavelength_nm, minus_cos_theta, dot_pol_cross_mom_nrm, ss, 16u );  
+    stack.calc( wavelength_nm, minus_cos_theta, dot_pol_cross_mom_nrm, ss, 16u );
 
 
 
-    bool expect = theEfficiency <= 1. ; 
+    bool expect = theEfficiency <= 1. ;
     if(!expect) std::cerr
         << "C4CustomART::doIt"
         << " implementation_version " << implementation_version
@@ -403,86 +407,87 @@ inline void C4CustomART::doIt(const G4Track& aTrack, const G4Step& )
         << " ERR: theEfficiency > 1. : " << theEfficiency
         << " _qe " << _qe
         << " lposcost " << lposcost
-        << " stack.art.A (aka An) " << stack.art.A 
-        << std::endl 
+        << " stack.art.A (aka An) " << stack.art.A
+        << std::endl
         ;
-    assert( expect ); 
+    assert( expect );
 
-    const double& A = stack.art.A ; 
-    const double& R = stack.art.R ; 
-    const double& T = stack.art.T ; 
+    const double& A = stack.art.A ;
+    const double& R = stack.art.R ;
+    const double& T = stack.art.T ;
 
-    theAbsorption = A ; 
-    theReflectivity  = R/(1.-A) ; 
-    theTransmittance = T/(1.-A)  ;   
+    theAbsorption = A ;
+    theReflectivity  = R/(1.-A) ;
+    theTransmittance = T/(1.-A)  ;
 
-    if(dump) std::cerr   
+    if(dump) std::cerr
         << "C4CustomART::doIt"
         << " implementation_version " << implementation_version
         << " Impl " << ImplementationDescription(implementation_version)
-        << std::endl 
-        << " pmtid " << pmtid << std::endl 
-        << " _qe                      : " << std::fixed << std::setw(10) << std::setprecision(4) << _qe  << std::endl 
-        << " minus_cos_theta          : " << std::fixed << std::setw(10) << std::setprecision(4) << minus_cos_theta  << std::endl 
-        << " dot_pol_cross_mom_nrm    : " << std::fixed << std::setw(10) << std::setprecision(4) << dot_pol_cross_mom_nrm  << std::endl 
-        << " lposcost                 : " << std::fixed << std::setw(10) << std::setprecision(4) << lposcost << std::endl 
-        << std::endl 
-        << " stack " 
-        << std::endl 
-        << stack 
-        << std::endl 
-        << " theAbsorption    : " << std::fixed << std::setw(10) << std::setprecision(4) << theAbsorption  << std::endl 
-        << " theReflectivity  : " << std::fixed << std::setw(10) << std::setprecision(4) << theReflectivity  << std::endl 
-        << " theTransmittance : " << std::fixed << std::setw(10) << std::setprecision(4) << theTransmittance  << std::endl 
-        << " theEfficiency    : " << std::fixed << std::setw(10) << std::setprecision(4) << theEfficiency  << std::endl 
+        << std::endl
+        << " pmtid " << pmtid << std::endl
+        << " _qe                      : " << std::fixed << std::setw(10) << std::setprecision(4) << _qe  << std::endl
+        << " minus_cos_theta          : " << std::fixed << std::setw(10) << std::setprecision(4) << minus_cos_theta  << std::endl
+        << " dot_pol_cross_mom_nrm    : " << std::fixed << std::setw(10) << std::setprecision(4) << dot_pol_cross_mom_nrm  << std::endl
+        << " lposcost                 : " << std::fixed << std::setw(10) << std::setprecision(4) << lposcost << std::endl
+        << std::endl
+        << " stack "
+        << std::endl
+        << stack
+        << std::endl
+        << " theAbsorption    : " << std::fixed << std::setw(10) << std::setprecision(4) << theAbsorption  << std::endl
+        << " theReflectivity  : " << std::fixed << std::setw(10) << std::setprecision(4) << theReflectivity  << std::endl
+        << " theTransmittance : " << std::fixed << std::setw(10) << std::setprecision(4) << theTransmittance  << std::endl
+        << " theEfficiency    : " << std::fixed << std::setw(10) << std::setprecision(4) << theEfficiency  << std::endl
         ;
 
 
 #ifdef C4_DEBUG
-    dbg.A = A ; 
-    dbg.R = R ; 
-    dbg.T = T ; 
-    dbg._qe = _qe ; 
+    dbg.A = A ;
+    dbg.R = R ;
+    dbg.T = T ;
+    dbg._qe = _qe ;
 
-    dbg.minus_cos_theta = minus_cos_theta ; 
-    dbg.wavelength_nm   = wavelength_nm ; 
-    dbg.pmtid           = double(pmtid) ; 
-    dbg.lposcost        = lposcost ; 
+    dbg.minus_cos_theta = minus_cos_theta ;
+    dbg.wavelength_nm   = wavelength_nm ;
+    dbg.pmtid           = double(pmtid) ;
+    dbg.lposcost        = lposcost ;
 #endif
 
-    count += 1 ; 
+    count += 1 ;
 }
 
 
 
 inline const char* C4CustomART::ImplementationDescription(int iv)
 {
-    const char* str = nullptr ; 
+    const char* str = nullptr ;
     switch(iv)
     {
-        case  ORIGINAL: str = _ORIGINAL  ; break 
-        case TRANSIENT: str = _TRANSIENT ; break 
-        case     YUHAN: str = _YUHAN     ; break 
+        case  PLACEHOLDER: str = _PLACEHOLDER  ; break ;
+        case     ORIGINAL: str = _ORIGINAL     ; break ;
+        case    TRANSIENT: str = _TRANSIENT    ; break ;
+        case        YUHAN: str = _YUHAN        ; break ;
     }
-    return str ; 
+    return str ;
 }
 
 
 
-inline std::string C4CustomART::desc() const 
+inline std::string C4CustomART::desc() const
 {
-    std::stringstream ss ; 
+    std::stringstream ss ;
     ss << "C4CustomART::desc"
-       << " count " << std::setw(4) << count 
-       << " theGlobalPoint " << theGlobalPoint 
-       << " theRecoveredNormal " << theRecoveredNormal 
+       << " count " << std::setw(4) << count
+       << " theGlobalPoint " << theGlobalPoint
+       << " theRecoveredNormal " << theRecoveredNormal
        << " theAbsorption " << std::fixed << std::setw(10) << std::setprecision(5) << theAbsorption
        << " theReflectivity " << std::fixed << std::setw(10) << std::setprecision(5) << theReflectivity
        << " theTransmittance " << std::fixed << std::setw(10) << std::setprecision(5) << theTransmittance
        << " theEfficiency " << std::fixed << std::setw(10) << std::setprecision(5) << theEfficiency
        << " Impl " << ImplementationDescription(implementation_version)
        ;
-    std::string str = ss.str(); 
-    return str ; 
+    std::string str = ss.str();
+    return str ;
 }
 
