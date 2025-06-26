@@ -2,6 +2,11 @@ Custom4 Release Notes
 ========================
 
 
+0.1.9
+------
+
+* untested compilation fixes regarding the implementation version switching
+
 0.1.8
 -------
 
