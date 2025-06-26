@@ -2,8 +2,8 @@ Custom4 Release Notes
 ========================
 
 
-0.1.9 : 2026/01/16
----------------------
+0.1.9_release : manually cherry-picked release candidate
+----------------------------------------------------------
 
 * change formerly templated C4TrackInfo typically used with C4Pho template type to being non-templated
   with fixed C4Pho type for the label, this change is because dynamic casts do not work with templated C4TrackInfo
