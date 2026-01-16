@@ -5,138 +5,134 @@ C4TrackInfo.h (from opticks/sysrap/STrackInfo.h)
 
 Required methods for T::
 
-   std::string desc() const ;  
-   T T::Placeholder() ; 
-   T T::Fabricate(int id) ; 
+   std::string desc() const ;
+   T T::Placeholder() ;
+   T T::Fabricate(int id) ;
 
 **/
 
 #include <string>
 #include "G4Track.hh"
 #include "G4VUserTrackInformation.hh"
+#include "C4Pho.h"
 
-template<typename T>
 struct C4TrackInfo : public G4VUserTrackInformation
 {
-    T label  ; 
+    C4Pho label  ;
 
-    C4TrackInfo(const T& label); 
-    std::string desc() const ; 
+    C4TrackInfo(const C4Pho& label);
+    std::string desc() const ;
 
-    static C4TrackInfo<T>* GetTrackInfo(const G4Track* track); 
-    static C4TrackInfo<T>* GetTrackInfo_dynamic(const G4Track* track); 
-    static bool Exists(const G4Track* track); 
-    static T  Get(   const G4Track* track);   // by value 
-    static T* GetRef(const G4Track* track);   // by reference, allowing inplace changes
-    static std::string Desc(const G4Track* track); 
+    static C4TrackInfo* GetTrackInfo_UNDEFINED(const G4Track* track);
+    static C4TrackInfo* GetTrackInfo(const G4Track* track);
+    static bool Exists(const G4Track* track);
+    static C4Pho  Get(   const G4Track* track);   // by value
+    static C4Pho* GetRef(const G4Track* track);   // by reference, allowing inplace changes
+    static std::string Desc(const G4Track* track);
 
-    static void Set(G4Track* track, const T& label ); 
+    static void Set(G4Track* track, const C4Pho& label );
 };
 
-template<typename T>
-inline C4TrackInfo<T>::C4TrackInfo(const T& _label )
-    :   
+inline C4TrackInfo::C4TrackInfo(const C4Pho& _label )
+    :
     G4VUserTrackInformation("C4TrackInfo"),
     label(_label)
 {
 }
- 
-template<typename T>
-inline std::string C4TrackInfo<T>::desc() const 
+
+inline std::string C4TrackInfo::desc() const
 {
-    std::stringstream ss ; 
-    ss << *pType << " " << label.desc() ; 
-    std::string str = ss.str(); 
-    return str ; 
+    std::stringstream ss ;
+    ss << *pType << " " << label.desc() ;
+    std::string str = ss.str();
+    return str ;
 }
 
 /**
-C4TrackInfo::GetTrackInfo
---------------------------
+C4TrackInfo::GetTrackInfo_UNDEFINED
+------------------------------------
 
-With U4PhotonInfo the ancestor of STrackInfo was using dynamic_cast 
-without issue. After moving to the templated STrackInfo the 
-dynamic cast always giving nullptr. So switched to static_cast. 
+With U4PhotonInfo the ancestor of STrackInfo was using dynamic_cast
+without issue. After moving to the templated STrackInfo the
+dynamic cast always giving nullptr. So switched to static_cast.
+
+THIS MEANS THAT THIS STRUCT SHOULD NOT BE USED UNLESS CAN BE
+SURE THAT NO OTHER G4VUserTrackInformation SUB-CLASS IS IN USE
+AS STATIC CASTING APPLIED TO SOME OTHER TYPE WILL LEAD TO UNDEFINED
+ACTIONS
 
 **/
 
-template<typename T>
-inline C4TrackInfo<T>* C4TrackInfo<T>::GetTrackInfo(const G4Track* track) // static, label by value 
+inline C4TrackInfo* C4TrackInfo::GetTrackInfo_UNDEFINED(const G4Track* track) // static, label by value
 {
     G4VUserTrackInformation* ui = track->GetUserInformation() ;
-    C4TrackInfo<T>* trackinfo = ui ? static_cast<C4TrackInfo<T>*>(ui) : nullptr ;
-    return trackinfo ; 
+    C4TrackInfo* trackinfo = ui ? static_cast<C4TrackInfo*>(ui) : nullptr ;
+    return trackinfo ;
 }
 
-template<typename T>
-inline C4TrackInfo<T>* C4TrackInfo<T>::GetTrackInfo_dynamic(const G4Track* track) // static, label by value 
+inline C4TrackInfo* C4TrackInfo::GetTrackInfo(const G4Track* track) // static, label by value
 {
     G4VUserTrackInformation* ui = track->GetUserInformation() ;
-    C4TrackInfo<T>* trackinfo = ui ? dynamic_cast<C4TrackInfo<T>*>(ui) : nullptr ;
-    return trackinfo ; 
+    C4TrackInfo* trackinfo = ui ? dynamic_cast<C4TrackInfo*>(ui) : nullptr ;
+    return trackinfo ;
 }
 
 
 
 
-template<typename T>
-inline bool C4TrackInfo<T>::Exists(const G4Track* track) // static
+inline bool C4TrackInfo::Exists(const G4Track* track) // static
 {
-    C4TrackInfo<T>* trackinfo = GetTrackInfo(track); 
-    return trackinfo != nullptr ; 
+    C4TrackInfo* trackinfo = GetTrackInfo(track);
+    return trackinfo != nullptr ;
 }
 
-template<typename T>
-inline T C4TrackInfo<T>::Get(const G4Track* track) // static, label by value 
+inline C4Pho C4TrackInfo::Get(const G4Track* track) // static, label by value
 {
-    C4TrackInfo<T>* trackinfo = GetTrackInfo(track); 
-    return trackinfo ? trackinfo->label : T::Placeholder() ; 
+    C4TrackInfo* trackinfo = GetTrackInfo(track);
+    return trackinfo ? trackinfo->label : C4Pho::Placeholder() ;
 }
 
-template<typename T>
-inline T* C4TrackInfo<T>::GetRef(const G4Track* track) // static, label reference 
+inline C4Pho* C4TrackInfo::GetRef(const G4Track* track) // static, label reference
 {
-    C4TrackInfo<T>* trackinfo = GetTrackInfo(track); 
-    return trackinfo ? &(trackinfo->label) : nullptr ; 
+    C4TrackInfo* trackinfo = GetTrackInfo(track);
+    return trackinfo ? &(trackinfo->label) : nullptr ;
 }
 
-template<typename T>
-inline std::string C4TrackInfo<T>::Desc(const G4Track* track)
+inline std::string C4TrackInfo::Desc(const G4Track* track)
 {
     G4VUserTrackInformation* ui = track->GetUserInformation() ;
 
-    C4TrackInfo<T>* trackinfo = GetTrackInfo(track); 
-    C4TrackInfo<T>* trackinfo_dyn = GetTrackInfo_dynamic(track); 
+    C4TrackInfo* trackinfo = GetTrackInfo(track);
+    C4TrackInfo* trackinfo_undefined = GetTrackInfo_UNDEFINED(track);
 
-    std::stringstream ss ; 
-    ss << "C4TrackInfo::Desc" 
-       << std::endl 
-       << " track " << track 
+    std::stringstream ss ;
+    ss << "C4TrackInfo::Desc"
+       << std::endl
+       << " track " << track
        << " track.GetUserInformation " << ui
-       << std::endl 
-       << " trackinfo " << trackinfo 
-       << " trackinfo_dyn " << trackinfo_dyn 
-       << std::endl 
+       << std::endl
+       << " trackinfo " << trackinfo
+       << " trackinfo_undefined " << trackinfo_undefined
+       << std::endl
        << " trackinfo.desc " << ( trackinfo ? trackinfo->desc() : "-" )
-       << std::endl 
-       << " trackinfo_dyn.desc " << ( trackinfo_dyn ? trackinfo_dyn->desc() : "-" )
-       ; 
-    std::string str = ss.str(); 
-    return str ; 
-}  
+       << std::endl
+       << " trackinfo_undefined.desc " << ( trackinfo_undefined ? trackinfo_undefined->desc() : "-" )
+       ;
+    std::string str = ss.str();
+    return str ;
+}
 
 
-template<typename T>
-inline void C4TrackInfo<T>::Set(G4Track* track, const T& _label )  // static 
+inline void C4TrackInfo::Set(G4Track* track, const C4Pho& _label )  // static
 {
-    T* label = GetRef(track); 
+    C4Pho* label = GetRef(track);
     if(label == nullptr)
     {
-        track->SetUserInformation(new C4TrackInfo<T>(_label)); 
+        track->SetUserInformation(new C4TrackInfo(_label));
     }
     else
     {
-        *label = _label ; 
+        *label = _label ;
     }
 }
 
