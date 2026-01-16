@@ -3,25 +3,25 @@ cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 CMakeLists.txt
 =================
 
-Note this is a bit laborious as does not use the 
-Opticks CMake machinery 
+Note this is a bit laborious as does not use the
+Opticks CMake machinery
 
 Following primitive non-target based CMake approach for consistency with junosw
-Potential for troubles when used with Opticks target based CMake.  
+Potential for troubles when used with Opticks target based CMake.
 
-NB for checking the CMake versioning machinery see 
+NB for checking the CMake versioning machinery see
 
-* opticks/examples/UseCustom4/go.sh 
+* opticks/examples/UseCustom4/go.sh
 
 #]=]
 
 
 set(name Custom4)
 project(${name})
-set(${PROJECT_NAME}_VERSION_MAJOR 0) 
+set(${PROJECT_NAME}_VERSION_MAJOR 0)
 set(${PROJECT_NAME}_VERSION_MINOR 1)        # MAX 99
 set(${PROJECT_NAME}_VERSION_PATCH 8)        # MAX 99
-set(${PROJECT_NAME}_VERSION_NUMBER 00108)   # MAX WITH MAJOR IS 09999 : HOW TO DERIVE THIS 
+set(${PROJECT_NAME}_VERSION_NUMBER 00108)   # MAX WITH MAJOR IS 09999 : HOW TO DERIVE THIS
 set(${PROJECT_NAME}_VERSION "${${PROJECT_NAME}_VERSION_MAJOR}.${${PROJECT_NAME}_VERSION_MINOR}.${${PROJECT_NAME}_VERSION_PATCH}")
 
 
@@ -34,13 +34,13 @@ set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH})
 
 
-find_package(Geant4 REQUIRED)   
+find_package(Geant4 REQUIRED)
 
 get_filename_component(Custom4_GEANT4_PREFIX "${Geant4_INCLUDE_DIR}/../.." ABSOLUTE) ## DUH : Geant4 does not provide PREFIX
 find_program(Custom4_GEANT4_CONFIG_BIN geant4-config PATHS ${Custom4_GEANT4_PREFIX}/bin)
 execute_process(
      COMMAND ${Custom4_GEANT4_CONFIG_BIN} --cflags
-     OUTPUT_VARIABLE Custom4_GEANT4_CFLAGS                                   ## the cflags has the correct include directory 
+     OUTPUT_VARIABLE Custom4_GEANT4_CFLAGS                                   ## the cflags has the correct include directory
      OUTPUT_STRIP_TRAILING_WHITESPACE
     )
 
@@ -77,7 +77,7 @@ if(Custom4_VERBOSE)
 endif()
 
 
-set(SOURCES 
+set(SOURCES
     C4OpBoundaryProcess.cc
 )
 
@@ -92,14 +92,14 @@ set(HEADERS
     C4Track.h
     C4Pho.h
     C4GS.h
-    C4Sys.h 
+    C4Sys.h
 )
 
 add_library( ${name} SHARED ${SOURCES} ${HEADERS} )
 
-target_include_directories( ${name} PUBLIC 
+target_include_directories( ${name} PUBLIC
       $<BUILD_INTERFACE:${Geant4_INCLUDE_DIR}>
-      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> 
+      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )
 target_link_libraries(      ${name} PUBLIC ${Geant4_LIBRARIES})
 
@@ -111,7 +111,7 @@ if (${CMAKE_BUILD_TYPE} MATCHES "Debug")
     target_compile_definitions( ${name} PUBLIC C4_DEBUG_PIDX )
 else()
     message(STATUS "Custom4.CMAKE_BUILD_TYPE.Debug.NOT")
-endif() 
+endif()
 
 
 
@@ -126,7 +126,7 @@ set(CUSTOM4_CMAKE_DIR  ${CUSTOM4_RELATIVE_LIBDIR}/${PROJECT_NAME}-${${PROJECT_NA
 
 
 set(CUSTOM4_SETUP "
-# CUSTOM4_SETUP 
+# CUSTOM4_SETUP
 
 get_filename_component(Custom4_CMAKE_PATH   \"\${CMAKE_CURRENT_LIST_FILE}\"    ABSOLUTE)
 get_filename_component(Custom4_CMAKE_DIR    \"\${CMAKE_CURRENT_LIST_FILE}/..\" ABSOLUTE)
@@ -134,15 +134,15 @@ get_filename_component(Custom4_LIBRARY_DIR  \"\${CMAKE_CURRENT_LIST_FILE}/../..\
 get_filename_component(Custom4_PREFIX       \"\${CMAKE_CURRENT_LIST_FILE}/../../..\" ABSOLUTE)
 get_filename_component(Custom4_INCLUDE_DIR  \"\${Custom4_PREFIX}/${CUSTOM4_RELATIVE_INCDIR}\" ABSOLUTE)
 
-# include(\"\${Custom4_CMAKE_DIR}/Custom4ConfigVersion.cmake\")  
+# include(\"\${Custom4_CMAKE_DIR}/Custom4ConfigVersion.cmake\")
 # this appears to be automatically included by find_package
 
 
 find_library(Custom4_LIBRARY_PATH
            NAMES Custom4
            PATHS \${Custom4_LIBRARY_DIR}
-           NO_DEFAULT_PATH  
-        )   
+           NO_DEFAULT_PATH
+        )
 
 
 set(Custom4_FOUND \"YES\")
@@ -172,7 +172,7 @@ set(_tgt Custom4::Custom4)
 if(NOT TARGET \${_tgt})
     add_library(\${_tgt} SHARED IMPORTED)
     set_target_properties(\${_tgt} PROPERTIES
-      IMPORTED_LOCATION             \"\${Custom4_LIBRARY_PATH}\"  
+      IMPORTED_LOCATION             \"\${Custom4_LIBRARY_PATH}\"
       INTERFACE_COMPILE_DEFINITIONS \"WITH_CUSTOM4\"
       INTERFACE_INCLUDE_DIRECTORIES \"\${Custom4_INCLUDE_DIR}\"
       )
@@ -197,9 +197,9 @@ configure_file(
   )
 
 
-configure_file( 
-  ${PROJECT_SOURCE_DIR}/C4Version.h.in  
-  ${PROJECT_BINARY_DIR}/C4Version.h 
+configure_file(
+  ${PROJECT_SOURCE_DIR}/C4Version.h.in
+  ${PROJECT_BINARY_DIR}/C4Version.h
   @ONLY
   )
 

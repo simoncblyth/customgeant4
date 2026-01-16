@@ -2,39 +2,47 @@ Custom4 Release Notes
 ========================
 
 
+0.1.9 : 2026/01/16
+---------------------
+
+* change formerly templated C4TrackInfo typically used with C4Pho template type to being non-templated
+  with fixed C4Pho type for the label, this change is because dynamic casts do not work with templated C4TrackInfo
+  preventing integration with code with other users of Geant4 track info
+* move C4OpBoundaryProcess::m_track_label behind C4_DEBUG_PIDX as only needed for debug
+
 0.1.8
 -------
 
 * minor change in `ART_` struct : switching [:,3,2] from A_av to dot_pol_cross_mom_nrm to assist testing
-* remove obsolete `OLD_ART_` struct 
+* remove obsolete `OLD_ART_` struct
 * add tests/C4MultiLayrStack_Test2.sh comparing results from pypi tmm package with this package : get near perfect match
 * add tests/V.h minimal vector methods needed by C4MultiLayrStack_Test2.cc
 
-0.1.7 
+0.1.7
 ------
 
 * no result changes from this release
-* improve documentation of tagging and development workflows 
-* util.sh script for tarball curl and scp to workstation 
+* improve documentation of tagging and development workflows
+* util.sh script for tarball curl and scp to workstation
 
 0.1.6
 -------
 
-* fixes polarization S/P power fraction (E_s2) bug 
-* adds debug dumping 
+* fixes polarization S/P power fraction (E_s2) bug
+* adds debug dumping
 
 0.1.5
 ------
 
 * adds versioning with CMake generated C4Version.h
-* build.sh adopts separate CMAKE_INSTALL_PREFIX 
- 
+* build.sh adopts separate CMAKE_INSTALL_PREFIX
+
 
 0.1.4 and prior
 -----------------
 
-Versioning was only fully setup in 0.1.5 thus to use versioning 
-before that requires some manual kludging. 
+Versioning was only fully setup in 0.1.5 thus to use versioning
+before that requires some manual kludging.
 For example adding a minimal C4Version.h into the appropriate include dir,
 will allow macro version branching to work::
 
