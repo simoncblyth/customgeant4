@@ -199,8 +199,8 @@ C4OpBoundaryProcess::~C4OpBoundaryProcess(){}
 G4VParticleChange*
 C4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 {
-        m_track_label = C4TrackInfo<C4Pho>::GetRef(&aTrack);
 #ifdef C4_DEBUG_PIDX
+        m_track_label = C4TrackInfo::GetRef(&aTrack);
         m_track_dump = ( m_track_label != nullptr && m_track_label->id == PIDX && PIDX_ENABLED ) || PIDX == -2  ; 
 #endif
 

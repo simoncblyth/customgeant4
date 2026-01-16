@@ -1,3 +1,6 @@
+# vim tempories
+*.swp
+
 # Prerequisites
 *.d
 

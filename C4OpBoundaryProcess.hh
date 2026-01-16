@@ -26,7 +26,7 @@
 //
 // $Id: CustomG4OpBoundaryProcess.hh 104458 2017-05-31 15:54:11Z gcosmo $
 //
-// 
+//
 ////////////////////////////////////////////////////////////////////////
 // Optical Photon Boundary Process Class Definition
 ////////////////////////////////////////////////////////////////////////
@@ -38,9 +38,9 @@
 // Created:     1997-06-18
 // Modified:    2005-07-28 add G4ProcessType to constructor
 //              1999-10-29 add method and class descriptors
-//              1999-10-10 - Fill NewMomentum/NewPolarization in 
+//              1999-10-10 - Fill NewMomentum/NewPolarization in
 //                           DoAbsorption. These members need to be
-//                           filled since DoIt calls 
+//                           filled since DoIt calls
 //                           aParticleChange.SetMomentumChange etc.
 //                           upon return (thanks to: Clark McGrew)
 //              2006-11-04 - add capability of calculating the reflectivity
@@ -97,8 +97,8 @@
 // Class Definition
 /////////////////////
 
-struct C4IPMTAccessor ; 
-struct C4CustomART ; 
+struct C4IPMTAccessor ;
+struct C4CustomART ;
 
 // AS G4OpBoundaryProcessStatus ENUM VARS IN GLOBAL SCOPE JUST USE STANDARD ONES
 
@@ -108,15 +108,15 @@ struct C4CustomART ;
 class C4OpBoundaryProcess : public G4VDiscreteProcess
 {
 public:
-        static const int  PIDX ; 
-        static const bool PIDX_ENABLED ; 
+        static const int  PIDX ;
+        static const bool PIDX_ENABLED ;
 
         ////////////////////////////////
         // Constructors and Destructor
         ////////////////////////////////
 
         C4OpBoundaryProcess(
-                                     const C4IPMTAccessor* accessor, 
+                                     const C4IPMTAccessor* accessor,
                                      const G4String& processName = "OpBoundary",
                                      G4ProcessType type = fOptical);
         ~C4OpBoundaryProcess();
@@ -248,13 +248,13 @@ public:
         // SCB: Custom extras
         G4ThreeVector theGlobalPoint ;
         G4ThreeVector theRecoveredNormal ;   // use haveEnteredDaughter status to unflip back to G4Track independent normal
-        G4double      theAbsorption ; 
+        G4double      theAbsorption ;
 
-        char           m_custom_status ; 
-        C4CustomART*   m_custom_art ;  
-        C4Pho*         m_track_label ; 
+        char           m_custom_status ;
+        C4CustomART*   m_custom_art ;
 #ifdef C4_DEBUG_PIDX
-        bool           m_track_dump ; 
+        C4Pho*         m_track_label ;
+        bool           m_track_dump ;
 #endif
 
 };
@@ -272,7 +272,7 @@ G4bool C4OpBoundaryProcess::G4BooleanRand(const G4double prob) const
 }
 
 inline
-G4bool C4OpBoundaryProcess::IsApplicable(const G4ParticleDefinition& 
+G4bool C4OpBoundaryProcess::IsApplicable(const G4ParticleDefinition&
                                                        aParticleType)
 {
    return ( &aParticleType == G4OpticalPhoton::OpticalPhoton() );
@@ -294,7 +294,7 @@ void C4OpBoundaryProcess::SetInvokeSD(G4bool flag)
 C4OpBoundaryProcess::ChooseReflection
 ----------------------------------------------
 
-Defaults of prob_ss, prob_sl, prob_bs are all 0. 
+Defaults of prob_ss, prob_sl, prob_bs are all 0.
 
 
 **/
